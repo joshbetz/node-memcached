@@ -11,11 +11,13 @@ module.exports = class Pool extends EventEmitter {
 			min: 2,
 			acquireTimeoutMillis: 2000,
 			destroyTimeoutMillis: 2000,
+			failures: 5,
 		}, opts );
 
 		this.pool = GenericPool.createPool( {
 			create: () => new Memcached( host.port, host.host ),
 			destroy: memcached => memcached.end(),
+			validate: memcached => memcached.errors < this.failures,
 		}, opts );
 	}
 
