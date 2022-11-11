@@ -1,8 +1,11 @@
 const GenericPool = require( 'generic-pool' );
+const { EventEmitter } = require( 'events' );
 const Memcached = require( './memcached' );
 
-module.exports = class Pool {
+module.exports = class Pool extends EventEmitter {
 	constructor( host, opts ) {
+		super();
+
 		opts = Object.assign( {
 			max: 10,
 			min: 2,
@@ -18,7 +21,14 @@ module.exports = class Pool {
 
 	async get( key ) {
 		const connection = await this.pool.acquire();
-		const value = await connection.get( key );
+
+		let value = false;
+		try {
+			value = await connection.get( key );
+		} catch ( error ) {
+			this.emit( 'error', error );
+		}
+
 		await this.pool.release( connection );
 
 		return value;
@@ -26,18 +36,32 @@ module.exports = class Pool {
 
 	async set( key, value, ttl = 0 ) {
 		const connection = await this.pool.acquire();
-		const ret = await connection.set( key, value, ttl );
+
+		let set = false;
+		try {
+			set = await connection.set( key, value, ttl );
+		} catch ( error ) {
+			this.emit( 'error', error );
+		}
+
 		await this.pool.release( connection );
 
-		return ret;
+		return set;
 	}
 
 	async del( key ) {
 		const connection = await this.pool.acquire();
-		const ret = await connection.del( key );
+
+		let del = false;
+		try {
+			del = await connection.del( key );
+		} catch ( error ) {
+			this.emit( 'error', error );
+		}
+
 		await this.pool.release( connection );
 
-		return ret;
+		return del;
 	}
 
 	async end() {

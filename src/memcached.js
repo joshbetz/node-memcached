@@ -1,21 +1,30 @@
 const { createConnection } = require( 'net' );
 const { EventEmitter } = require( 'events' );
 
-module.exports = class Memcached {
+module.exports = class Memcached extends EventEmitter {
 	constructor( port, host ) {
+		super();
+
+		this.errors = 0;
+
 		this.ready = false;
 		this.client = createConnection( { port, host } );
 		this.client.once( 'ready', () => {
 			this.ready = true;
 		} );
 
-		this.response = new EventEmitter();
+		// forward errors
+		this.client.on( 'error', error => {
+			this.errors++;
 
-		// forward errors to response event
-		this.client.on( 'error', error => this.response.emit( 'message', error ) );
+			this.emit( 'error', error );
+			this.emit( 'message', error );
+		} );
 
 		let buffer = '';
 		this.client.on( 'data', data => {
+			this.errors = 0;
+
 			buffer += data;
 			while ( buffer.length > 0 ) {
 				const tokens = [
@@ -44,7 +53,7 @@ module.exports = class Memcached {
 				}
 
 				// emit response
-				this.response.emit( 'message', null, buffer.substring( 0, end ) );
+				this.emit( 'message', null, buffer.substring( 0, end ) );
 
 				// remove response from the buffer
 				buffer = buffer.substring( end );
@@ -63,9 +72,13 @@ module.exports = class Memcached {
 	async command( command ) {
 		return new Promise( ( resolve, reject ) => {
 			this.client.write( command );
-			this.response.once( 'message', ( error, message ) => {
+			this.once( 'message', ( error, message ) => {
 				if ( error ) {
 					return reject( error );
+				}
+
+				if ( message.indexOf( 'ERROR' ) === 0 || message.indexOf( 'CLIENT_ERROR' ) === 0 || message.indexOf( 'SERVER_ERROR' ) === 0 ) {
+					return reject( message );
 				}
 
 				return resolve( message );
