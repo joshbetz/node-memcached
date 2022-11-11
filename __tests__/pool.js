@@ -16,7 +16,9 @@ describe( 'pool', () => {
 
 	it( 'should set and get', async () => {
 		const pool = new Pool( { port: 11211, host: 'localhost' } );
-		await pool.set( 'test', 'test' );
+		const set = await pool.set( 'test', 'test' );
+		expect( set ).toBe( true );
+
 		const get = await pool.get( 'test' );
 		expect( get ).toBe( 'test' );
 		await pool.end();

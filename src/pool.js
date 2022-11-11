@@ -26,14 +26,18 @@ module.exports = class Pool {
 
 	async set( key, value, ttl = 0 ) {
 		const connection = await this.pool.acquire();
-		await connection.set( key, value, ttl );
+		const ret = await connection.set( key, value, ttl );
 		await this.pool.release( connection );
+
+		return ret;
 	}
 
 	async del( key ) {
 		const connection = await this.pool.acquire();
-		await connection.del( key );
+		const ret = await connection.del( key );
 		await this.pool.release( connection );
+
+		return ret;
 	}
 
 	async end() {
