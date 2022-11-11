@@ -1,4 +1,4 @@
-const Memcached = require( '../memcached' );
+const { Memcached } = require( '../' );
 
 describe( 'connection', () => {
 	it( 'should correctly acquire a memcached connection', async () => {
