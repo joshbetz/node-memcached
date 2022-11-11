@@ -54,7 +54,7 @@ describe( 'basic commands', () => {
 	} );
 
 	it( 'should correctly del', async () => {
-		const set = await memcached.set( 'set', 'set' );
+		await memcached.set( 'set', 'set' );
 		let get = await memcached.get( 'set' );
 		expect( get ).toBe( 'set' );
 
