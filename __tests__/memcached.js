@@ -1,4 +1,4 @@
-const { Memcached } = require( '../' );
+const { Memcached } = require( '../src/' );
 
 describe( 'connection', () => {
 	it( 'should correctly acquire a memcached connection', async () => {
@@ -29,7 +29,7 @@ describe( 'basic commands', () => {
 		expect( set ).toBe( true );
 	} );
 
-	it.each([
+	it.each( [
 		{
 			key: 'get',
 			value: 'get',
@@ -37,8 +37,8 @@ describe( 'basic commands', () => {
 		{
 			key: 'get2',
 			value: 'data',
-		}
-	])( 'should correctly get %p', async ( { key, value } ) => {
+		},
+	] )( 'should correctly get %p', async ( { key, value } ) => {
 		await memcached.set( key, value );
 		const get = await memcached.get( key );
 		expect( get ).toBe( value );

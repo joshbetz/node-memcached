@@ -1,12 +1,13 @@
 const { createConnection } = require( 'net' );
-const { EventEmitter } = require("events");
-
+const { EventEmitter } = require( 'events' );
 
 module.exports = class Memcached {
-	constructor(port, host) {
-		this.ready = false
-		this.client = createConnection({ port, host });
-		this.client.once( 'ready', () => this.ready = true );
+	constructor( port, host ) {
+		this.ready = false;
+		this.client = createConnection( { port, host } );
+		this.client.once( 'ready', () => {
+			this.ready = true;
+		} );
 
 		this.response = new EventEmitter();
 
@@ -68,7 +69,7 @@ module.exports = class Memcached {
 				}
 
 				resolve( true );
-			});
+			} );
 		} );
 	}
 
@@ -91,7 +92,7 @@ module.exports = class Memcached {
 				data = data.substring( start, end );
 
 				resolve( data );
-			});
+			} );
 		} );
 	}
 
@@ -109,11 +110,11 @@ module.exports = class Memcached {
 				}
 
 				resolve( true );
-			});
+			} );
 		} );
 	}
 
 	async end() {
 		this.client.end();
 	}
-}
+};
