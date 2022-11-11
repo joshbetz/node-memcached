@@ -12,7 +12,7 @@ describe( 'connection', () => {
 	} );
 } );
 
-describe( 'commands', () => {
+describe( 'basic commands', () => {
 	let memcached;
 
 	beforeAll( async () => {
@@ -42,6 +42,15 @@ describe( 'commands', () => {
 		await memcached.set( key, value );
 		const get = await memcached.get( key );
 		expect( get ).toBe( value );
+	} );
+
+	it( 'should get big values', async () => {
+		const data = 'a'.repeat( 1023 * 1024 ); // 1MB - 1kb (for headers)
+		const set = await memcached.set( 'big', data );
+		expect( set ).toBe( true );
+
+		const get = await memcached.get( 'big' );
+		expect( get ).toBe( data );
 	} );
 
 	it( 'should correctly del', async () => {
