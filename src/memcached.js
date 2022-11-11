@@ -60,63 +60,48 @@ module.exports = class Memcached {
 		return new Promise( resolve => this.client.once( 'ready', resolve ) );
 	}
 
-	async set( key, value, ttl = 0 ) {
+	async command( command ) {
 		return new Promise( ( resolve, reject ) => {
-			this.client.write( `set ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
-			this.response.once( 'message', data => {
-				if ( data instanceof Error ) {
-					reject( data );
+			this.client.write( command );
+			this.response.once( 'message', message => {
+				if ( message instanceof Error ) {
+					return reject( message );
 				}
 
-				data = data.toString();
-				if ( data.indexOf( 'STORED' ) !== 0 ) {
-					resolve( false );
-				}
-
-				resolve( true );
+				return resolve( message );
 			} );
 		} );
+	}
+
+	async set( key, value, ttl = 0 ) {
+		const message = await this.command( `set ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
+		if ( message.indexOf( 'STORED' ) !== 0 ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	async get( key ) {
-		return new Promise( ( resolve, reject ) => {
-			this.client.write( `get ${key}\r\n` );
-			this.response.once( 'message', data => {
-				if ( data instanceof Error ) {
-					reject( data );
-				}
+		const message = await this.command( `get ${key}\r\n` );
+		if ( message === 'END\r\n' ) {
+			return false;
+		}
 
-				data = data.toString();
-				if ( data === 'END\r\n' ) {
-					return resolve( false );
-				}
+		// start after the \r\n
+		const start = message.indexOf( '\r\n' ) + 2;
+		const end = message.indexOf( '\r\nEND\r\n' );
 
-				// start after the \r\n
-				const start = data.indexOf( '\r\n' ) + 2;
-				const end = data.indexOf( '\r\nEND\r\n' );
-				data = data.substring( start, end );
-
-				resolve( data );
-			} );
-		} );
+		return message.substring( start, end );
 	}
 
 	async del( key ) {
-		return new Promise( ( resolve, reject ) => {
-			this.client.write( `delete ${key}\r\n` );
-			this.response.once( 'message', data => {
-				if ( data instanceof Error ) {
-					reject( data );
-				}
+		const message = await this.command( `delete ${key}\r\n` );
+		if ( message.indexOf( 'DELETED' ) !== 0 ) {
+			return false;
+		}
 
-				data = data.toString();
-				if ( data.indexOf( 'DELETED' ) !== 0 ) {
-					resolve( false );
-				}
-
-				resolve( true );
-			} );
-		} );
+		return true;
 	}
 
 	async end() {
