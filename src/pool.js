@@ -15,22 +15,25 @@ module.exports = class Pool extends EventEmitter {
 		}, opts );
 
 		this.pool = GenericPool.createPool( {
-			create: () => new Memcached( host.port, host.host ),
-			destroy: memcached => memcached.end(),
+			create: () => {
+				const memcached = new Memcached( host.port, host.host );
+				memcached.on( 'error', error => this.emit( 'error', error ) );
+				return memcached;
+			},
+			destroy: memcached => {
+				memcached.removeAllListeners();
+				return memcached.end();
+			},
 			validate: memcached => memcached.errors < this.failures,
 		}, opts );
+
+		this.pool.on( 'factoryCreateError', error => this.emit( 'error', error ) );
 	}
 
 	async get( key ) {
 		const connection = await this.pool.acquire();
 
-		let value = false;
-		try {
-			value = await connection.get( key );
-		} catch ( error ) {
-			this.emit( 'error', error );
-		}
-
+		const value = await connection.get( key );
 		await this.pool.release( connection );
 
 		return value;
@@ -39,13 +42,7 @@ module.exports = class Pool extends EventEmitter {
 	async set( key, value, ttl = 0 ) {
 		const connection = await this.pool.acquire();
 
-		let set = false;
-		try {
-			set = await connection.set( key, value, ttl );
-		} catch ( error ) {
-			this.emit( 'error', error );
-		}
-
+		const set = await connection.set( key, value, ttl );
 		await this.pool.release( connection );
 
 		return set;
@@ -54,13 +51,7 @@ module.exports = class Pool extends EventEmitter {
 	async del( key ) {
 		const connection = await this.pool.acquire();
 
-		let del = false;
-		try {
-			del = await connection.del( key );
-		} catch ( error ) {
-			this.emit( 'error', error );
-		}
-
+		const del = await connection.del( key );
 		await this.pool.release( connection );
 
 		return del;
