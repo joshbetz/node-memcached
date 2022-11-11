@@ -22,6 +22,11 @@ module.exports = class Memcached {
 					buffer.indexOf( 'END\r\n' ),
 					buffer.indexOf( 'STORED\r\n' ),
 					buffer.indexOf( 'DELETED\r\n' ),
+
+					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
+					buffer.indexOf( 'ERROR\r\n' ),
+					buffer.indexOf( 'CLIENT_ERROR' ),
+					buffer.indexOf( 'SERVER_ERROR' ),
 				].filter( i => i >= 0 );
 
 				if ( !tokens.length ) {
