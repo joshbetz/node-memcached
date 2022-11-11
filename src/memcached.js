@@ -44,7 +44,7 @@ module.exports = class Memcached {
 				}
 
 				// emit response
-				this.response.emit( 'message', buffer.substring( 0, end ) );
+				this.response.emit( 'message', null, buffer.substring( 0, end ) );
 
 				// remove response from the buffer
 				buffer = buffer.substring( end );
@@ -63,9 +63,9 @@ module.exports = class Memcached {
 	async command( command ) {
 		return new Promise( ( resolve, reject ) => {
 			this.client.write( command );
-			this.response.once( 'message', message => {
-				if ( message instanceof Error ) {
-					return reject( message );
+			this.response.once( 'message', ( error, message ) => {
+				if ( error ) {
+					return reject( error );
 				}
 
 				return resolve( message );
