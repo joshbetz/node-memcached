@@ -2,8 +2,12 @@ const { createConnection } = require( 'net' );
 const { EventEmitter } = require( 'events' );
 
 module.exports = class Memcached extends EventEmitter {
-	constructor( port, host ) {
+	constructor( port, host, opts ) {
 		super();
+
+		this.opts = Object.assign( {
+			timeout: 1000,
+		}, opts );
 
 		this.errors = 0;
 
@@ -71,8 +75,7 @@ module.exports = class Memcached extends EventEmitter {
 
 	async command( command ) {
 		return new Promise( ( resolve, reject ) => {
-			this.client.write( command );
-			this.once( 'message', ( error, message ) => {
+			const onMessage = ( error, message ) => {
 				if ( error ) {
 					return reject( error );
 				}
@@ -82,7 +85,15 @@ module.exports = class Memcached extends EventEmitter {
 				}
 
 				return resolve( message );
-			} );
+			};
+
+			this.client.write( command );
+			this.once( 'message', onMessage );
+
+			setTimeout( () => {
+				this.off( 'message', onMessage );
+				reject( new Error( 'Timeout' ) );
+			}, this.opts.timeout ).unref();
 		} );
 	}
 
