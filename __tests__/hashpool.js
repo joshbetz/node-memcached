@@ -6,6 +6,15 @@ describe( 'hashpool', () => {
 		const pool = new HashPool( [ 'localhost:11211', 'localhost:11311' ] );
 		await pool.end();
 	} );
+
+	it( 'should error on duplicate hosts', async () => {
+		let pool;
+		try {
+			pool = new HashPool( [ 'localhost:11211', 'localhost:11211' ] );
+		} catch ( error ) {
+			expect( error.message ).toBe( 'Pool already has node localhost:11211' );
+		}
+	} );
 } );
 
 describe( 'basic ops', () => {

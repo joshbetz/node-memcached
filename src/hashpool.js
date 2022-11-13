@@ -12,7 +12,7 @@ module.exports = class HashPool extends EventEmitter {
 		}, opts );
 
 		this.hashring = new HashRing();
-		this.nodes = {};
+		this.nodes = new Map();
 		this.isReady = false;
 		for ( const node of nodes ) {
 			this.connect( node );
@@ -20,19 +20,24 @@ module.exports = class HashPool extends EventEmitter {
 	}
 
 	connect( node ) {
+		if ( this.nodes.has( node ) ) {
+			this.end();
+			throw new Error( `Pool already has node ${node}` );
+		}
+
 		const [ host, port ] = node.split( ':' );
 		const pool = new Pool( { host, port } );
-		this.nodes[node] = {
+		this.nodes.set( node, {
 			pool,
 			errors: 0,
-		};
+		} );
 
 		let reconnecting = false;
 		pool.on( 'error', error => {
 			if ( error.code === 'ECONNREFUSED' && !reconnecting ) {
 				reconnecting = true;
 				this.reconnect( node );
-			} else if ( this.nodes[node] && this.nodes[node].errors++ > this.opts.failures ) {
+			} else if ( this.nodes.has( node ) && this.nodes.get( node ).errors++ > this.opts.failures ) {
 				this.disconnect( node );
 			}
 		} );
@@ -61,12 +66,12 @@ module.exports = class HashPool extends EventEmitter {
 	disconnect( node ) {
 		this.hashring.remove( node );
 
-		const host = this.nodes[node];
+		const host = this.nodes.get( node );
 		host.pool.end();
 
-		delete this.nodes[node];
+		delete this.nodes.get( node );
 
-		if ( !this.nodes ) {
+		if ( !this.nodes.size ) {
 			this.isReady = false;
 		}
 
@@ -93,8 +98,8 @@ module.exports = class HashPool extends EventEmitter {
 	async getHost( key ) {
 		await this.ready();
 		const host = this.hashring.get( key );
-		this.nodes[host].errors = 0;
-		return this.nodes[host].pool;
+		this.nodes.get( host ).errors = 0;
+		return this.nodes.get( host ).pool;
 	}
 
 	async get( key ) {
@@ -131,11 +136,11 @@ module.exports = class HashPool extends EventEmitter {
 	}
 
 	async end() {
-		const all = [];
-		for ( const node in this.nodes ) {
-			all.push( this.nodes[node].pool.end() );
+		const hosts = [];
+		for ( const [ _, host ] of this.nodes.entries() ) {
+			hosts.push( host.pool.end() );
 		}
 
-		await Promise.all( all );
+		await Promise.all( hosts );
 	}
 };
