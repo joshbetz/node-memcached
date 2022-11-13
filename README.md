@@ -1,4 +1,4 @@
-# Memcached
+# Memcached [![Node.js CI](https://github.com/joshbetz/node-memcached/actions/workflows/node.js.yml/badge.svg)](https://github.com/joshbetz/node-memcached/actions/workflows/node.js.yml)
 
 There are three libraries exported from this package.
 
