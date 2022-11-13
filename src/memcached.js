@@ -106,6 +106,10 @@ module.exports = class Memcached extends EventEmitter {
 		} );
 	}
 
+	async flush() {
+		return this.command( 'flush_all\r\n' );
+	}
+
 	async store( command, key, value, ttl = 0 ) {
 		if ( ttl > 60 * 60 * 24 * 30 ) {
 			// Memcached considers ttls over 30 days to be

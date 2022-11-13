@@ -18,6 +18,7 @@ describe( 'basic commands', () => {
 	beforeAll( async () => {
 		memcached = new Memcached( 11211, 'localhost' );
 		await memcached.acquire();
+		await memcached.flush();
 	} );
 
 	afterAll( async () => {
