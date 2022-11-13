@@ -39,6 +39,8 @@ module.exports = class Memcached extends EventEmitter {
 					buffer.indexOf( 'END\r\n' ),
 					buffer.indexOf( 'STORED\r\n' ),
 					buffer.indexOf( 'DELETED\r\n' ),
+					buffer.indexOf( 'OK\r\n' ),
+					buffer.indexOf( 'NOT_FOUND\r\n' ),
 
 					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
 					buffer.indexOf( 'ERROR\r\n' ),

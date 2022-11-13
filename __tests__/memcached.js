@@ -78,6 +78,11 @@ describe( 'basic commands', () => {
 		expect( get ).toBe( false );
 	} );
 
+	it( 'should del key that does not exist', async () => {
+		const del = await memcached.del( 'nonexisting' );
+		expect( del ).toBe( false );
+	} );
+
 	it( 'should error on timestamps greater than 30 days', async () => {
 		const set = memcached.set( 'set', 'set', 60 * 60 * 31 * 24 );
 		expect( set ).rejects.toEqual( new Error( 'Invalid TTL' ) );
