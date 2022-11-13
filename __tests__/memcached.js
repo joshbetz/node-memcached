@@ -67,6 +67,11 @@ describe( 'basic commands', () => {
 		expect( get ).toBe( data );
 	} );
 
+	it( 'should get keys that do not exist', async () => {
+		const get = await memcached.get( 'nonexisting' );
+		expect( get ).toBe( false );
+	} );
+
 	it( 'should correctly del', async () => {
 		await memcached.set( 'set', 'set' );
 		let get = await memcached.get( 'set' );
