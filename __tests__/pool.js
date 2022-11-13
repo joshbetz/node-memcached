@@ -7,7 +7,7 @@ describe( 'pool', () => {
 			min: 50,
 		};
 
-		const pool = new Pool( { port: 11211, host: 'localhost' }, opts );
+		const pool = new Pool( 11211, 'localhost', opts );
 		expect( pool.pool._config.max ).toBe( 100 );
 		expect( pool.pool._config.min ).toBe( 50 );
 
@@ -15,7 +15,7 @@ describe( 'pool', () => {
 	} );
 
 	it( 'should set and get', async () => {
-		const pool = new Pool( { port: 11211, host: 'localhost' } );
+		const pool = new Pool( 11211, 'localhost' );
 		const set = await pool.set( 'test', 'test' );
 		expect( set ).toBe( true );
 

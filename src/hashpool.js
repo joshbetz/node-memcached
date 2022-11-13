@@ -8,7 +8,19 @@ module.exports = class HashPool extends EventEmitter {
 
 		this.opts = Object.assign( {
 			failures: 5,
-			retry: 10000,
+			retry: 30000,
+
+			// Pool options
+			max: 10,
+			min: 2,
+			acquireTimeoutMillis: 2000,
+			destroyTimeoutMillis: 2000,
+			maxWaitingClients: 10,
+			idleTimeoutMillis: 30000,
+
+			// Connection options
+			timeout: 1000,
+			socketTimeout: 1000,
 		}, opts );
 
 		this.hashring = new HashRing();
@@ -26,7 +38,7 @@ module.exports = class HashPool extends EventEmitter {
 		}
 
 		const [ host, port ] = node.split( ':' );
-		const pool = new Pool( { host, port } );
+		const pool = new Pool( port, host, this.opts );
 		this.nodes.set( node, {
 			pool,
 			errors: 0,
@@ -67,6 +79,7 @@ module.exports = class HashPool extends EventEmitter {
 		this.hashring.remove( node );
 
 		const host = this.nodes.get( node );
+		// TODO: Flush host when we connect?
 		host.pool.end();
 
 		delete this.nodes.get( node );
@@ -102,15 +115,10 @@ module.exports = class HashPool extends EventEmitter {
 		return this.nodes.get( host ).pool;
 	}
 
-	async get( key ) {
-		let host;
-		try {
-			host = await this.getHost( key );
-		} catch ( _ ) {
-			return false;
+	async flush() {
+		for ( const host of this.nodes.values() ) {
+			await host.pool.flush();
 		}
-
-		return host.get( key );
 	}
 
 	async set( key, value, ttl ) {
@@ -122,6 +130,28 @@ module.exports = class HashPool extends EventEmitter {
 		}
 
 		return host.set( key, value, ttl );
+	}
+
+	async add( key, value, ttl ) {
+		let host;
+		try {
+			host = await this.getHost( key );
+		} catch ( _ ) {
+			return false;
+		}
+
+		return host.add( key, value, ttl );
+	}
+
+	async get( key ) {
+		let host;
+		try {
+			host = await this.getHost( key );
+		} catch ( _ ) {
+			return false;
+		}
+
+		return host.get( key );
 	}
 
 	async del( key ) {
@@ -136,11 +166,8 @@ module.exports = class HashPool extends EventEmitter {
 	}
 
 	async end() {
-		const hosts = [];
-		for ( const [ _, host ] of this.nodes.entries() ) {
-			hosts.push( host.pool.end() );
+		for ( const host of this.nodes.values() ) {
+			await host.pool.end();
 		}
-
-		await Promise.all( hosts );
 	}
 };

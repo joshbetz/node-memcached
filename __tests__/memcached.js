@@ -3,10 +3,10 @@ const { Memcached } = require( '../src/' );
 describe( 'connection', () => {
 	it( 'should correctly acquire a memcached connection', async () => {
 		const memcached = new Memcached( 11211, 'localhost' );
-		expect( memcached.ready ).toBe( false );
+		expect( memcached.isReady ).toBe( false );
 
-		await memcached.acquire();
-		expect( memcached.ready ).toBe( true );
+		await memcached.ready();
+		expect( memcached.isReady ).toBe( true );
 
 		await memcached.end();
 	} );
@@ -17,7 +17,7 @@ describe( 'basic commands', () => {
 
 	beforeAll( async () => {
 		memcached = new Memcached( 11211, 'localhost' );
-		await memcached.acquire();
+		await memcached.ready();
 		await memcached.flush();
 	} );
 
