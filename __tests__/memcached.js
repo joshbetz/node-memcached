@@ -64,4 +64,9 @@ describe( 'basic commands', () => {
 		get = await memcached.get( 'set' );
 		expect( get ).toBe( false );
 	} );
+
+	it( 'should error on timestamps greater than 30 days', async () => {
+		const set = memcached.set( 'set', 'set', 60 * 60 * 31 * 24 );
+		expect( set ).rejects.toEqual( new Error( 'Invalid TTL' ) );
+	} );
 } );
