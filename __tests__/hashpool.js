@@ -21,7 +21,7 @@ describe( 'basic ops', () => {
 
 	it( 'should correctly get a host', () => {
 		const host = pool.getHost( 'key' );
-		expect( host ).toBeInstanceOf( Pool );
+		expect( host ).resolves.toBeInstanceOf( Pool );
 	} );
 
 	it( 'should corrrectly set and get', async () => {
