@@ -83,6 +83,11 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async command( command ) {
+		if ( command.slice( -2 ) !== '\r\n' ) {
+			// Append CR LF to every command if it is not already present
+			command = command + '\r\n';
+		}
+
 		return new Promise( ( resolve, reject ) => {
 			const onMessage = ( error, message ) => {
 				if ( error ) {
