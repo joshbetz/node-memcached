@@ -40,31 +40,20 @@ module.exports = class Pool extends EventEmitter {
 		this.pool.on( 'factoryCreateError', error => this.emit( 'error', error ) );
 	}
 
+	async ready() {
+		return this.pool.ready();
+	}
+
 	async get( key ) {
-		const connection = await this.pool.acquire();
-
-		const value = await connection.get( key );
-		await this.pool.release( connection );
-
-		return value;
+		return this.pool.use( client => client.get( key ) );
 	}
 
 	async set( key, value, ttl = 0 ) {
-		const connection = await this.pool.acquire();
-
-		const set = await connection.set( key, value, ttl );
-		await this.pool.release( connection );
-
-		return set;
+		return this.pool.use( client => client.set( key, value, ttl ) );
 	}
 
 	async del( key ) {
-		const connection = await this.pool.acquire();
-
-		const del = await connection.del( key );
-		await this.pool.release( connection );
-
-		return del;
+		return this.pool.use( client => client.del( key ) );
 	}
 
 	async end() {
