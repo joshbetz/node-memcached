@@ -36,8 +36,6 @@ module.exports = class Pool extends EventEmitter {
 				return true;
 			},
 		}, opts );
-
-		this.pool.on( 'factoryCreateError', error => this.emit( 'error', error ) );
 	}
 
 	async ready() {
