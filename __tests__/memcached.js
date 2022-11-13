@@ -29,6 +29,19 @@ describe( 'basic commands', () => {
 		expect( set ).toBe( true );
 	} );
 
+	it( 'should correctly add', async () => {
+		const add = await memcached.add( 'add', 'add' );
+		expect( add ).toBe( true );
+	} );
+
+	it( 'should not add if the value already exists', async () => {
+		let add = await memcached.add( 'add2', 'add' );
+		expect( add ).toBe( true );
+
+		add = await memcached.add( 'add2', 'add' );
+		expect( add ).toBe( false );
+	} );
+
 	it.each( [
 		{
 			key: 'get',
