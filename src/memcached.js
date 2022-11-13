@@ -7,15 +7,19 @@ module.exports = class Memcached extends EventEmitter {
 
 		this.opts = Object.assign( {
 			timeout: 1000,
+			socketTimeout: 1000,
 		}, opts );
 
 		this.errors = 0;
-
 		this.ready = false;
+
 		this.client = createConnection( { port, host } );
-		this.client.once( 'ready', () => {
-			this.ready = true;
+		this.client.setTimeout( this.opts.socketTimeout, () => {
+			this.emit( 'error', new Error( 'Socket Timeout' ) );
+			this.client.destroy();
 		} );
+		this.client.once( 'connect', () => this.client.setTimeout( 0 ) );
+		this.client.once( 'ready', () => { this.ready = true; } );
 
 		// forward errors
 		this.client.on( 'error', error => {
@@ -70,7 +74,10 @@ module.exports = class Memcached extends EventEmitter {
 			return true;
 		}
 
-		return new Promise( resolve => this.client.once( 'ready', resolve ) );
+		return new Promise( ( resolve, reject ) => {
+			this.once( 'error', reject );
+			this.client.once( 'ready', resolve );
+		} );
 	}
 
 	async command( command ) {
