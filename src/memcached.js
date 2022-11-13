@@ -105,6 +105,13 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async store( command, key, value, ttl = 0 ) {
+		if ( ttl > 60 * 60 * 24 * 30 ) {
+			// Memcached considers ttls over 30 days to be
+			// Unix timestamps. This is confusing and usually
+			// leads to bugs. Just error in this case.
+			throw new Error( 'Invalid TTL' );
+		}
+
 		const message = await this.command( `${command} ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
 		if ( message.indexOf( 'STORED' ) !== 0 ) {
 			return false;
