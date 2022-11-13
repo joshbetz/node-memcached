@@ -1,5 +1,11 @@
 # Memcached
 
+There are three libraries exported from this package.
+
+```
+const { Memcached, Pool, HashPool } = require( './' );
+```
+
 ## API
 
 The API for all three libraries is the same. It just depends what kind of connection and failover logic you need.
