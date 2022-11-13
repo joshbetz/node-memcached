@@ -104,13 +104,21 @@ module.exports = class Memcached extends EventEmitter {
 		} );
 	}
 
-	async set( key, value, ttl = 0 ) {
-		const message = await this.command( `set ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
+	async store( command, key, value, ttl = 0 ) {
+		const message = await this.command( `${command} ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
 		if ( message.indexOf( 'STORED' ) !== 0 ) {
 			return false;
 		}
 
 		return true;
+	}
+
+	async set( key, value, ttl = 0 ) {
+		return this.store( 'set', key, value, ttl );
+	}
+
+	async add( key, value, ttl = 0 ) {
+		return this.store( 'add', key, value, ttl );
 	}
 
 	async get( key ) {
