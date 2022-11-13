@@ -14,17 +14,27 @@ module.exports = class Pool extends EventEmitter {
 			failures: 5,
 		}, opts );
 
+		opts.testOnBorrow = true;
+
 		this.pool = GenericPool.createPool( {
-			create: () => {
+			create: async () => {
 				const memcached = new Memcached( host.port, host.host );
 				memcached.on( 'error', error => this.emit( 'error', error ) );
+
+				await memcached.acquire();
 				return memcached;
 			},
-			destroy: memcached => {
+			destroy: async ( memcached ) => {
 				memcached.removeAllListeners();
 				return memcached.end();
 			},
-			validate: memcached => memcached.errors < this.failures,
+			validate: async ( memcached ) => {
+				if ( memcached.errors > this.failures ) {
+					return false;
+				}
+
+				return true;
+			},
 		}, opts );
 
 		this.pool.on( 'factoryCreateError', error => this.emit( 'error', error ) );
