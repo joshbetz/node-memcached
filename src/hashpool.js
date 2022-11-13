@@ -22,6 +22,10 @@ module.exports = class HashPool extends EventEmitter {
 	connect( node ) {
 		const [ host, port ] = node.split( ':' );
 		const pool = new Pool( { host, port } );
+		this.nodes[node] = {
+			pool,
+			errors: 0,
+		};
 
 		let reconnecting = false;
 		pool.on( 'error', error => {
@@ -35,11 +39,6 @@ module.exports = class HashPool extends EventEmitter {
 
 		pool.ready()
 			.then( () => {
-				this.nodes[node] = {
-					pool,
-					errors: 0,
-				};
-
 				this.hashring.add( node );
 
 				this.isReady = true;
