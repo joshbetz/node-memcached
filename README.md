@@ -3,7 +3,7 @@
 There are three libraries exported from this package.
 
 ```
-const { Memcached, Pool, HashPool } = require( './' );
+const { Memcached, Pool, HashPool } = require( '@joshbetz/memcached' );
 ```
 
 ## API
