@@ -73,6 +73,14 @@ module.exports = class Pool extends EventEmitter {
 		return this.pool.use( client => client.del( key ) );
 	}
 
+	async incr( key, value = 1 ) {
+		return this.pool.use( client => client.incr( key, value ) );
+	}
+
+	async decr( key, value = 1 ) {
+		return this.pool.use( client => client.decr( key, value ) );
+	}
+
 	async end() {
 		await this.pool.drain();
 		await this.pool.clear();

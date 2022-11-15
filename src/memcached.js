@@ -49,8 +49,13 @@ module.exports = class Memcached extends EventEmitter {
 				].filter( i => i >= 0 );
 
 				if ( !tokens.length ) {
-					// If the message is split, we might not have any tokens in this chunk.
-					return;
+					// incr/decr return just a number, i.e. 1\r\n
+					if ( !buffer.match( /^\d+\r\n$/ ) ) {
+						// If the message is split, we might not have any tokens in this chunk.
+						return;
+					}
+
+					tokens.push( 0 );
 				}
 
 				// Get the end of the next message
@@ -123,6 +128,9 @@ module.exports = class Memcached extends EventEmitter {
 			throw new Error( 'Invalid TTL' );
 		}
 
+		// Cast value to a string so we can take the length
+		value = value.toString();
+
 		const message = await this.command( `${command} ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
 		if ( message.indexOf( 'STORED' ) !== 0 ) {
 			return false;
@@ -159,6 +167,26 @@ module.exports = class Memcached extends EventEmitter {
 		}
 
 		return true;
+	}
+
+	async incr( key, value = 1 ) {
+		const message = await this.command( `incr ${key} ${value}\r\n` );
+		if ( message === 'NOT_FOUND\r\n' ) {
+			return false;
+		}
+
+		const end = message.indexOf( '\r\n' );
+		return Number.parseInt( message.substring( 0, end ), 10 );
+	}
+
+	async decr( key, value = 1 ) {
+		const message = await this.command( `decr ${key} ${value}\r\n` );
+		if ( message === 'NOT_FOUND\r\n' ) {
+			return false;
+		}
+
+		const end = message.indexOf( '\r\n' );
+		return Number.parseInt( message.substring( 0, end ), 10 );
 	}
 
 	async end() {

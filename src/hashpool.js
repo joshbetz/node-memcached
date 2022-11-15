@@ -165,6 +165,28 @@ module.exports = class HashPool extends EventEmitter {
 		return host.del( key );
 	}
 
+	async incr( key, value = 1 ) {
+		let host;
+		try {
+			host = await this.getHost( key );
+		} catch ( _ ) {
+			return false;
+		}
+
+		return host.incr( key, value );
+	}
+
+	async decr( key, value = 1 ) {
+		let host;
+		try {
+			host = await this.getHost( key );
+		} catch ( _ ) {
+			return false;
+		}
+
+		return host.decr( key, value );
+	}
+
 	async end() {
 		for ( const host of this.nodes.values() ) {
 			await host.pool.end();

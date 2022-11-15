@@ -93,4 +93,30 @@ describe( 'basic commands', () => {
 		const set = memcached.set( 'set', 'set', 60 * 60 * 31 * 24 );
 		expect( set ).rejects.toEqual( new Error( 'Invalid TTL' ) );
 	} );
+
+	it( 'should correctly increment', async () => {
+		await memcached.set( 'increment', 0 );
+		const incr = await memcached.incr( 'increment' );
+		expect( incr ).toBe( 1 );
+		const incr2 = await memcached.incr( 'increment', 2 );
+		expect( incr2 ).toBe( 3 );
+	} );
+
+	it( 'should return false on increment if the key does not exist', async () => {
+		const incr = await memcached.incr( 'invalid' );
+		expect( incr ).toBe( false );
+	} );
+
+	it( 'should correctly decrement', async () => {
+		await memcached.set( 'decrement', 10 );
+		const decr = await memcached.decr( 'decrement' );
+		expect( decr ).toBe( 9 );
+		const decr2 = await memcached.decr( 'decrement', 2 );
+		expect( decr2 ).toBe( 7 );
+	} );
+
+	it( 'should return false on decrement if the key does not exist', async () => {
+		const incr = await memcached.decr( 'invalid' );
+		expect( incr ).toBe( false );
+	} );
 } );
