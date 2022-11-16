@@ -49,8 +49,10 @@ module.exports = class Memcached extends EventEmitter {
 				].filter( i => i >= 0 );
 
 				if ( !tokens.length ) {
-					// incr/decr return just a number, i.e. 1\r\n
-					if ( !buffer.match( /^\d+\r\n$/ ) ) {
+					// incr / decr returns just a number, i.e. 1\r\n
+					const offset = buffer.indexOf( '\r\n' ) + 2;
+					const line = buffer.substring( 0, offset );
+					if ( !line.match( /^\d+\r\n$/ ) ) {
 						// If the message is split, we might not have any tokens in this chunk.
 						return;
 					}
