@@ -60,6 +60,7 @@ This is a simple Memcached library that connects to a Memcached server and execu
 
 ```
 const opts = {
+    prefix: '',
     timeout: 1000,
     socketTimeout: 1000,
 };
@@ -72,6 +73,7 @@ await memcached.end();
 
 ### Options
 
+* `prefix` A prefix to apply to all keys. Default: ''
 * `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 1000.
 
@@ -94,6 +96,7 @@ const opts = {
     idleTimeoutMillis: 30000,
 
     // Connection options
+    prefix: '',
     timeout: 1000,
     socketTimeout: 1000,
 };
@@ -112,6 +115,7 @@ await memcached.end();
 * `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 2000.
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
+* `prefix` A prefix to apply to all keys. Default: ''
 * `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 1000.
 
@@ -135,6 +139,7 @@ const opts = {
     idleTimeoutMillis: 30000,
 
     // Connection options
+    prefix: '',
     timeout: 1000,
     socketTimeout: 1000,
 };
@@ -154,5 +159,6 @@ await memcached.end();
 * `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 2000.
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
+* `prefix` A prefix to apply to all keys. Default: ''
 * `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 1000.

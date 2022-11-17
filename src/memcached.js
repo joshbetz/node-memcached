@@ -6,6 +6,7 @@ module.exports = class Memcached extends EventEmitter {
 		super();
 
 		this.opts = Object.assign( {
+			prefix: '',
 			timeout: 1000,
 			socketTimeout: 1000,
 		}, opts );
@@ -89,12 +90,19 @@ module.exports = class Memcached extends EventEmitter {
 		} );
 	}
 
-	async command( command ) {
-		if ( command.slice( -2 ) !== '\r\n' ) {
-			// Append CR LF to every command if it is not already present
-			command = command + '\r\n';
+	async command( cmd, key, args = [] ) {
+		if ( key ) {
+			// keys cannot contain whitespace
+			key = key.replace( /\s+/, '_' );
+
+			if ( this.opts.prefix ) {
+				key = this.opts.prefix + key;
+			}
+
+			args.unshift( key );
 		}
 
+		const command = `${cmd} ${args.join( ' ' )}\r\n`;
 		return new Promise( ( resolve, reject ) => {
 			const onMessage = ( error, message ) => {
 				if ( error ) {
@@ -119,7 +127,7 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async flush() {
-		return this.command( 'flush_all\r\n' );
+		return this.command( 'flush_all' );
 	}
 
 	async store( command, key, value, ttl = 0 ) {
@@ -133,7 +141,7 @@ module.exports = class Memcached extends EventEmitter {
 		// Cast value to a string so we can take the length
 		value = value.toString();
 
-		const message = await this.command( `${command} ${key} 0 ${ttl} ${value.length}\r\n${value}\r\n` );
+		const message = await this.command( command, key, [ 0, ttl, `${value.length}\r\n${value}` ] );
 		if ( message.indexOf( 'STORED' ) !== 0 ) {
 			return false;
 		}
@@ -150,7 +158,7 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async get( key ) {
-		const message = await this.command( `get ${key}\r\n` );
+		const message = await this.command( 'get', key );
 		if ( message === 'END\r\n' ) {
 			return false;
 		}
@@ -163,7 +171,7 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async del( key ) {
-		const message = await this.command( `delete ${key}\r\n` );
+		const message = await this.command( 'delete', key );
 		if ( message.indexOf( 'DELETED' ) !== 0 ) {
 			return false;
 		}
@@ -172,7 +180,7 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async incr( key, value = 1 ) {
-		const message = await this.command( `incr ${key} ${value}\r\n` );
+		const message = await this.command( 'incr', key, [ value ] );
 		if ( message === 'NOT_FOUND\r\n' ) {
 			return false;
 		}
@@ -182,7 +190,7 @@ module.exports = class Memcached extends EventEmitter {
 	}
 
 	async decr( key, value = 1 ) {
-		const message = await this.command( `decr ${key} ${value}\r\n` );
+		const message = await this.command( 'decr', key, [ value ] );
 		if ( message === 'NOT_FOUND\r\n' ) {
 			return false;
 		}

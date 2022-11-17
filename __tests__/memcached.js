@@ -12,6 +12,29 @@ describe( 'connection', () => {
 	} );
 } );
 
+describe( 'prefix', () => {
+	it( 'should correctly set and get with a prefix', async () => {
+		const memcached = new Memcached( 11211, 'localhost', { prefix: 'prefix:' } );
+		await memcached.ready();
+
+		const set = await memcached.set( 'somekey', 'somevalue' );
+		expect( set ).toBe( true );
+
+		const get = await memcached.get( 'somekey' );
+		expect( get ).toBe( 'somevalue' );
+
+		await memcached.end();
+
+		const memcachedUnprefixed = new Memcached( 11211, 'localhost' );
+		await memcachedUnprefixed.ready();
+
+		const getUnprefixed = await memcachedUnprefixed.get( 'prefix:somekey' );
+		expect( getUnprefixed ).toBe( 'somevalue' );
+
+		await memcachedUnprefixed.end();
+	} );
+} );
+
 describe( 'basic commands', () => {
 	let memcached;
 
@@ -118,5 +141,16 @@ describe( 'basic commands', () => {
 	it( 'should return false on decrement if the key does not exist', async () => {
 		const incr = await memcached.decr( 'invalid' );
 		expect( incr ).toBe( false );
+	} );
+
+	it( 'should allow keys with whitespace', async () => {
+		const set = await memcached.set( 'has whitespace', 'value' );
+		expect( set ).toBe( true );
+
+		const get = await memcached.get( 'has whitespace' );
+		expect( get ).toBe( 'value' );
+
+		const correctedKey = await memcached.get( 'has_whitespace' );
+		expect( correctedKey ).toBe( 'value' );
 	} );
 } );
