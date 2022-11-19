@@ -1,5 +1,5 @@
-const { HashPool } = require( '../src/' );
-const { Pool } = require( '../src/' );
+import HashPool from '../src/hashpool';
+import Pool from '../src/pool';
 
 describe( 'hashpool', () => {
 	it( 'should correctly shutdown hash pool', async () => {
@@ -11,14 +11,14 @@ describe( 'hashpool', () => {
 		let pool;
 		try {
 			pool = new HashPool( [ 'localhost:11211', 'localhost:11211' ] );
-		} catch ( error ) {
+		} catch ( error: any ) {
 			expect( error.message ).toBe( 'Pool already has node localhost:11211' );
 		}
 	} );
 } );
 
 describe( 'basic ops', () => {
-	let pool;
+	let pool: HashPool;
 
 	beforeAll( async () => {
 		pool = new HashPool( [ 'localhost:11211', 'localhost:11311' ] );

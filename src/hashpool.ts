@@ -1,9 +1,19 @@
+import { EventEmitter } from 'events';
+import Pool from './pool';
 const HashRing = require( 'hashring' );
-const { EventEmitter } = require( 'events' );
-const Pool = require( './pool' );
 
-module.exports = class HashPool extends EventEmitter {
-	constructor( nodes, opts ) {
+type PoolNode = {
+	pool: Pool;
+	errors: number;
+};
+
+export default class HashPool extends EventEmitter {
+	opts: any;
+	hashring: typeof HashRing;
+	nodes: Map<string, PoolNode>;
+	isReady: boolean;
+
+	constructor( nodes: Array<string>, opts?: any ) {
 		super();
 
 		this.opts = Object.assign( {
@@ -31,25 +41,25 @@ module.exports = class HashPool extends EventEmitter {
 		}
 	}
 
-	connect( node ) {
+	connect( node: string ) {
 		if ( this.nodes.has( node ) ) {
 			this.end();
 			throw new Error( `Pool already has node ${node}` );
 		}
 
 		const [ host, port ] = node.split( ':' );
-		const pool = new Pool( port, host, this.opts );
+		const pool: Pool = new Pool( parseInt( port, 10 ), host, this.opts );
 		this.nodes.set( node, {
 			pool,
 			errors: 0,
 		} );
 
 		let reconnecting = false;
-		pool.on( 'error', error => {
+		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
 			if ( error.code === 'ECONNREFUSED' && !reconnecting ) {
 				reconnecting = true;
 				this.reconnect( node );
-			} else if ( this.nodes.has( node ) && this.nodes.get( node ).errors++ > this.opts.failures ) {
+			} else if ( this.nodes.has( node ) && this.nodes.get( node )!.errors++ > this.opts.failures ) {
 				this.disconnect( node );
 			}
 		} );
@@ -61,7 +71,7 @@ module.exports = class HashPool extends EventEmitter {
 				this.isReady = true;
 				this.emit( 'ready' );
 			} )
-			.catch( _ => {
+			.catch( () => {
 				if ( !reconnecting ) {
 					reconnecting = true;
 					this.reconnect( node );
@@ -69,20 +79,22 @@ module.exports = class HashPool extends EventEmitter {
 			} );
 	}
 
-	reconnect( node ) {
+	reconnect( node: string ) {
 		setTimeout( () => {
 			this.connect( node );
 		}, this.opts.retry );
 	}
 
-	disconnect( node ) {
+	disconnect( node: string ) {
 		this.hashring.remove( node );
 
-		const host = this.nodes.get( node );
 		// TODO: Flush host when we connect?
-		host.pool.end();
+		const host = this.nodes.get( node );
+		if ( host ) {
+			host.pool.end();
+		}
 
-		delete this.nodes.get( node );
+		this.nodes.delete( node );
 
 		if ( !this.nodes.size ) {
 			this.isReady = false;
@@ -96,7 +108,7 @@ module.exports = class HashPool extends EventEmitter {
 			return true;
 		}
 
-		return new Promise( ( resolve, reject ) => {
+		return new Promise<void>( ( resolve, reject ) => {
 			const timeout = setTimeout( () => {
 				reject( new Error( 'No hosts' ) );
 			}, 5000 );
@@ -108,11 +120,16 @@ module.exports = class HashPool extends EventEmitter {
 		} );
 	}
 
-	async getHost( key ) {
+	async getHost( key: string ): Promise<Pool> {
 		await this.ready();
 		const host = this.hashring.get( key );
-		this.nodes.get( host ).errors = 0;
-		return this.nodes.get( host ).pool;
+		const node = this.nodes.get( host );
+		if ( !node ) {
+			throw new Error( 'Could not find node' );
+		}
+
+		node.errors = 0;
+		return node.pool;
 	}
 
 	async flush() {
@@ -121,7 +138,7 @@ module.exports = class HashPool extends EventEmitter {
 		}
 	}
 
-	async set( key, value, ttl ) {
+	async set( key: string, value: string, ttl = 0 ): Promise<boolean> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -132,7 +149,7 @@ module.exports = class HashPool extends EventEmitter {
 		return host.set( key, value, ttl );
 	}
 
-	async add( key, value, ttl ) {
+	async add( key: string, value: string, ttl = 0 ): Promise<boolean> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -143,7 +160,7 @@ module.exports = class HashPool extends EventEmitter {
 		return host.add( key, value, ttl );
 	}
 
-	async get( key ) {
+	async get( key: string ): Promise<string|false> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -154,7 +171,7 @@ module.exports = class HashPool extends EventEmitter {
 		return host.get( key );
 	}
 
-	async del( key ) {
+	async del( key: string ): Promise<boolean> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -165,7 +182,7 @@ module.exports = class HashPool extends EventEmitter {
 		return host.del( key );
 	}
 
-	async incr( key, value = 1 ) {
+	async incr( key: string, value = 1 ): Promise<number|false> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -176,7 +193,7 @@ module.exports = class HashPool extends EventEmitter {
 		return host.incr( key, value );
 	}
 
-	async decr( key, value = 1 ) {
+	async decr( key: string, value = 1 ): Promise<number|false> {
 		let host;
 		try {
 			host = await this.getHost( key );
