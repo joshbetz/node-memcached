@@ -51,9 +51,9 @@ export default class HashPool extends EventEmitter {
 		const pool: Pool = new Pool( parseInt( port, 10 ), host, this.opts );
 		let reconnecting = false;
 		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
+			reconnecting = true;
 			if ( error.code === 'ECONNREFUSED' && !reconnecting ) {
-				reconnecting = true;
-				this.reconnect( node );
+				this.disconnect( node );
 			} else if ( this.nodes.has( node ) && this.nodes.get( node )!.errors++ > this.opts.failures ) {
 				this.disconnect( node );
 			}
