@@ -8,6 +8,7 @@ module.exports = {
 	extends: [
 		'standard',
 		'plugin:security/recommended',
+		'plugin:@typescript-eslint/recommended',
 	],
 	globals: {
 		Atomics: 'readonly',
@@ -19,6 +20,7 @@ module.exports = {
 	},
 	plugins: [
 		'jest',
+		'@typescript-eslint',
 		'no-only-tests',
 		'spellcheck',
 	],
@@ -36,6 +38,7 @@ module.exports = {
 		'object-curly-spacing': [ 'error', 'always' ],
 		'array-bracket-spacing': [ 'error', 'always' ],
 		semi: [ 'error', 'always' ],
+		'@typescript-eslint/no-var-requires': [ 'off' ],
 		'no-only-tests/no-only-tests': 'error',
 		'spellcheck/spell-checker': [ 'warn', {
 			comments: true,

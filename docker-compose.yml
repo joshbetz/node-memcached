@@ -4,4 +4,7 @@ services:
     image: memcached
     ports:
       - 11211:11211
+  memcached2:
+    image: memcached
+    ports:
       - 11311:11211

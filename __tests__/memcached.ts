@@ -1,4 +1,4 @@
-const { Memcached } = require( '../src/' );
+import Memcached from '../src/memcached';
 
 describe( 'connection', () => {
 	it( 'should correctly acquire a memcached connection', async () => {
@@ -36,7 +36,7 @@ describe( 'prefix', () => {
 } );
 
 describe( 'basic commands', () => {
-	let memcached;
+	let memcached: Memcached;
 
 	beforeAll( async () => {
 		memcached = new Memcached( 11211, 'localhost' );
@@ -118,7 +118,7 @@ describe( 'basic commands', () => {
 	} );
 
 	it( 'should correctly increment', async () => {
-		await memcached.set( 'increment', 0 );
+		await memcached.set( 'increment', '0' );
 		const incr = await memcached.incr( 'increment' );
 		expect( incr ).toBe( 1 );
 		const incr2 = await memcached.incr( 'increment', 2 );
@@ -131,7 +131,7 @@ describe( 'basic commands', () => {
 	} );
 
 	it( 'should correctly decrement', async () => {
-		await memcached.set( 'decrement', 10 );
+		await memcached.set( 'decrement', '10' );
 		const decr = await memcached.decr( 'decrement' );
 		expect( decr ).toBe( 9 );
 		const decr2 = await memcached.decr( 'decrement', 2 );

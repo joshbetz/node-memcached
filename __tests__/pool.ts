@@ -1,4 +1,4 @@
-const { Pool } = require( '../src/' );
+import Pool from '../src/pool';
 
 describe( 'pool', () => {
 	it( 'should correctly set pool configuration', async () => {
@@ -8,8 +8,8 @@ describe( 'pool', () => {
 		};
 
 		const pool = new Pool( 11211, 'localhost', opts );
-		expect( pool.pool._config.max ).toBe( 100 );
-		expect( pool.pool._config.min ).toBe( 50 );
+		expect( pool.pool.max ).toBe( 100 );
+		expect( pool.pool.min ).toBe( 50 );
 
 		await pool.end();
 	} );
