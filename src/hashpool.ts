@@ -5,6 +5,7 @@ const HashRing = require( 'hashring' );
 type PoolNode = {
 	pool: Pool;
 	errors: number;
+	reconnecting: boolean;
 };
 
 export default class HashPool extends EventEmitter {
@@ -12,13 +13,19 @@ export default class HashPool extends EventEmitter {
 	hashring: typeof HashRing;
 	nodes: Map<string, PoolNode>;
 	isReady: boolean;
+	retries: number;
 
 	constructor( nodes: Array<string>, opts?: any ) {
 		super();
 
 		this.opts = Object.assign( {
 			failures: 5,
-			retry: 30000,
+			retry: ( retries: number ): number => {
+				const exp = Math.pow( 2, retries ) * 250;
+
+				// exponential backoff up to 30 seconds
+				return Math.min( exp, 30000 );
+			},
 
 			// Pool options
 			max: 10,
@@ -33,6 +40,7 @@ export default class HashPool extends EventEmitter {
 			socketTimeout: 1000,
 		}, opts );
 
+		this.retries = 0;
 		this.isReady = false;
 		this.hashring = new HashRing();
 		this.nodes = new Map();
@@ -47,59 +55,74 @@ export default class HashPool extends EventEmitter {
 		}
 
 		const [ host, port ] = node.split( ':' );
-		const pool: Pool = new Pool( parseInt( port, 10 ), host, this.opts );
+		let pool: Pool;
+		try {
+			pool = new Pool( parseInt( port, 10 ), host, this.opts );
+		} catch ( error ) {
+			return;
+		}
+
+		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
+			const host = this.nodes.get( node );
+			if ( error.code === 'ECONNREFUSED' && !host?.reconnecting ) {
+				return this.disconnect( node );
+			}
+
+			if ( host && !host.reconnecting && host.errors++ > this.opts.failures ) {
+				return this.disconnect( node );
+			}
+		} );
+
 		this.nodes.set( node, {
 			pool,
 			errors: 0,
-		} );
-
-		let reconnecting = false;
-		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
-			reconnecting = true;
-			if ( error.code === 'ECONNREFUSED' && !reconnecting ) {
-				this.disconnect( node );
-			} else if ( this.nodes.has( node ) && this.nodes.get( node )!.errors++ > this.opts.failures ) {
-				this.disconnect( node );
-			}
+			reconnecting: false,
 		} );
 
 		pool.ready()
 			.then( () => {
 				this.hashring.add( node );
 
+				this.retries = 0;
 				this.isReady = true;
 				this.emit( 'ready' );
 			} )
-			.catch( () => {
-				if ( !reconnecting ) {
-					reconnecting = true;
-					this.reconnect( node );
+			.catch( ( error: NodeJS.ErrnoException ) => {
+				if ( error.code === 'ECONNREFUSED' ) {
+					// This is already handled by the event emitter
+					return;
 				}
+
+				this.nodes.delete( node );
+				this.reconnect( node );
 			} );
 	}
 
 	reconnect( node: string ) {
 		setTimeout( () => {
 			this.connect( node );
-		}, this.opts.retry );
+		}, this.opts.retry( this.retries++ ) );
 	}
 
-	disconnect( node: string ) {
-		this.hashring.remove( node );
-
-		// TODO: Flush host when we connect?
+	disconnect( node: string, reconnect = true ) {
 		const host = this.nodes.get( node );
-		if ( host ) {
-			host.pool.end();
+		if ( !host || host.reconnecting ) {
+			return;
 		}
 
-		this.nodes.delete( node );
+		host.reconnecting = true;
 
-		if ( !this.nodes.size ) {
-			this.isReady = false;
-		}
+		this.hashring.remove( node );
+		host.pool.end().then( () => {
+			this.nodes.delete( node );
+			if ( !this.nodes.size ) {
+				this.isReady = false;
+			}
 
-		this.reconnect( node );
+			if ( reconnect ) {
+				this.reconnect( node );
+			}
+		} );
 	}
 
 	async ready() {
@@ -204,8 +227,10 @@ export default class HashPool extends EventEmitter {
 	}
 
 	async end() {
-		for ( const host of this.nodes.values() ) {
+		this.isReady = false;
+		for ( const [ node, host ] of this.nodes.entries() ) {
 			await host.pool.end();
+			this.nodes.delete( node );
 		}
 	}
 }
