@@ -128,7 +128,12 @@ This is a wrapper around our Pool library that establishes connection pools to e
 ```
 const opts = {
     failures: 5,
-    retry: 30000,
+    retry: ( retries: number ): number => {
+        const exp = Math.pow( 2, retries ) * 250;
+
+        // exponential backoff up to 30 seconds
+        return Math.min( exp, 30000 );
+    },
 
     // Pool options
     max: 10,
@@ -152,7 +157,7 @@ await memcached.end();
 ### Options
 
 * `failures` The number of consecutive errors on a given host before the host is marked as unhealthy. Default: 5.
-* `retry` The time in milliseconds to wait before trying to reconnect an unhealthy host. Default: 30000.
+* `retry` A function that takes the number of retries as a parameter and returns the time before the next retry in milliseconds.
 * `max` The maximum number of connections in the pool. Default: 10.
 * `min` The minimum number of connections in the pool. Default: 2.
 * `acquireTimeoutMillis` The maximum amount of time to wait to create a connection. Default: 2000.
