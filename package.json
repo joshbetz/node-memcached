@@ -9,8 +9,7 @@
     "test": "npm run lint && npm run jest",
     "lint": "eslint src __tests__",
     "jest": "jest",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test"
+    "prepare": "npm run build"
   },
   "author": "",
   "license": "MIT",
