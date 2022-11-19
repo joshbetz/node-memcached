@@ -1,4 +1,4 @@
-import Pool from '../src/pool';
+import { Pool } from '../src';
 
 describe( 'pool', () => {
 	it( 'should correctly set pool configuration', async () => {

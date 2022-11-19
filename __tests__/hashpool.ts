@@ -1,5 +1,4 @@
-import HashPool from '../src/hashpool';
-import Pool from '../src/pool';
+import { HashPool, Pool } from '../src';
 
 describe( 'hashpool', () => {
 	it( 'should correctly shutdown hash pool', async () => {

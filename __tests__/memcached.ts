@@ -1,4 +1,4 @@
-import Memcached from '../src/memcached';
+import { Memcached } from '../src';
 
 describe( 'connection', () => {
 	it( 'should correctly acquire a memcached connection', async () => {
