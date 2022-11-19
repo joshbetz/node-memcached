@@ -209,4 +209,4 @@ export default class HashPool extends EventEmitter {
 			await host.pool.end();
 		}
 	}
-};
+}
