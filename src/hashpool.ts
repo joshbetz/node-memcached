@@ -49,11 +49,6 @@ export default class HashPool extends EventEmitter {
 
 		const [ host, port ] = node.split( ':' );
 		const pool: Pool = new Pool( parseInt( port, 10 ), host, this.opts );
-		this.nodes.set( node, {
-			pool,
-			errors: 0,
-		} );
-
 		let reconnecting = false;
 		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
 			if ( error.code === 'ECONNREFUSED' && !reconnecting ) {
@@ -66,6 +61,11 @@ export default class HashPool extends EventEmitter {
 
 		pool.ready()
 			.then( () => {
+				this.nodes.set( node, {
+					pool,
+					errors: 0,
+				} );
+
 				this.hashring.add( node );
 
 				this.isReady = true;
