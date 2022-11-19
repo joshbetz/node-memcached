@@ -8,12 +8,14 @@ describe( 'hashpool', () => {
 	} );
 
 	it( 'should error on duplicate hosts', async () => {
-		let pool;
+		const pool = new HashPool( [ 'localhost:11211' ] );
 		try {
-			pool = new HashPool( [ 'localhost:11211', 'localhost:11211' ] );
+			pool.connect( 'localhost:11211' );
 		} catch ( error: any ) {
 			expect( error.message ).toBe( 'Pool already has node localhost:11211' );
 		}
+
+		await pool.end();
 	} );
 } );
 

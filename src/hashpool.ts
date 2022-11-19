@@ -33,9 +33,9 @@ export default class HashPool extends EventEmitter {
 			socketTimeout: 1000,
 		}, opts );
 
+		this.isReady = false;
 		this.hashring = new HashRing();
 		this.nodes = new Map();
-		this.isReady = false;
 		for ( const node of nodes ) {
 			this.connect( node );
 		}
@@ -43,12 +43,16 @@ export default class HashPool extends EventEmitter {
 
 	connect( node: string ) {
 		if ( this.nodes.has( node ) ) {
-			this.end();
 			throw new Error( `Pool already has node ${node}` );
 		}
 
 		const [ host, port ] = node.split( ':' );
 		const pool: Pool = new Pool( parseInt( port, 10 ), host, this.opts );
+		this.nodes.set( node, {
+			pool,
+			errors: 0,
+		} );
+
 		let reconnecting = false;
 		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
 			reconnecting = true;
@@ -61,11 +65,6 @@ export default class HashPool extends EventEmitter {
 
 		pool.ready()
 			.then( () => {
-				this.nodes.set( node, {
-					pool,
-					errors: 0,
-				} );
-
 				this.hashring.add( node );
 
 				this.isReady = true;
