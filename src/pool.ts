@@ -63,11 +63,11 @@ export default class Pool extends EventEmitter {
 		return this.pool.use( ( client: Memcached ) => client.flush() );
 	}
 
-	async set( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async set( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		return this.pool.use( ( client: Memcached ) => client.set( key, value, ttl ) );
 	}
 
-	async add( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async add( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		return this.pool.use( ( client: Memcached ) => client.add( key, value, ttl ) );
 	}
 

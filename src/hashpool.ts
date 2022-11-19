@@ -160,7 +160,7 @@ export default class HashPool extends EventEmitter {
 		}
 	}
 
-	async set( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async set( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		let host;
 		try {
 			host = await this.getHost( key );
@@ -171,7 +171,7 @@ export default class HashPool extends EventEmitter {
 		return host.set( key, value, ttl );
 	}
 
-	async add( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async add( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		let host;
 		try {
 			host = await this.getHost( key );

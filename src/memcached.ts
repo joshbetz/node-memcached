@@ -135,7 +135,7 @@ export default class Memcached extends EventEmitter {
 		return this.command( 'flush_all' );
 	}
 
-	async store( command: string, key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async store( command: string, key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		if ( ttl > 60 * 60 * 24 * 30 ) {
 			// Memcached considers ttls over 30 days to be
 			// Unix timestamps. This is confusing and usually
@@ -154,11 +154,11 @@ export default class Memcached extends EventEmitter {
 		return true;
 	}
 
-	async set( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async set( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		return this.store( 'set', key, value, ttl );
 	}
 
-	async add( key: string, value: string, ttl = 0 ): Promise<boolean> {
+	async add( key: string, value: string|number, ttl = 0 ): Promise<boolean> {
 		return this.store( 'add', key, value, ttl );
 	}
 
