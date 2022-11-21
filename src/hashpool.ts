@@ -101,7 +101,7 @@ export default class HashPool extends EventEmitter {
 	reconnect( node: string ) {
 		setTimeout( () => {
 			this.connect( node );
-		}, this.opts.retry( this.retries++ ) );
+		}, this.opts.retry( this.retries++ ) ).unref();
 	}
 
 	disconnect( node: string, reconnect = true ) {
@@ -133,7 +133,7 @@ export default class HashPool extends EventEmitter {
 		return new Promise<void>( ( resolve, reject ) => {
 			const timeout = setTimeout( () => {
 				reject( new Error( 'No hosts' ) );
-			}, 5000 );
+			}, this.opts.socketTimeout ).unref();
 
 			this.once( 'ready', () => {
 				clearTimeout( timeout );
