@@ -12,7 +12,7 @@ export default class Pool extends EventEmitter {
 
 		this.failures = 0;
 
-		opts = Object.assign( {
+		this.opts = Object.assign( {
 			failures: 5,
 
 			// Pool options
