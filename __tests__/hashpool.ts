@@ -16,6 +16,17 @@ describe( 'hashpool', () => {
 
 		await pool.end();
 	} );
+
+	it( 'should handle hosts that do not exist', async () => {
+		const pool = new HashPool( [ 'invalid-host' ] );
+		await pool.end();
+	} );
+
+	it( 'should return false if there are no hosts', async () => {
+		const pool = new HashPool( [ 'invalid-host' ] );
+		expect( pool.get( 'invalid-host' ) ).resolves.toBe( false );
+		await pool.end();
+	} );
 } );
 
 describe( 'basic ops', () => {
