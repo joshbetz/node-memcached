@@ -64,7 +64,7 @@ export default class HashPool extends EventEmitter {
 
 		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
 			const host = this.nodes.get( node );
-			if ( error.code === 'ECONNREFUSED' && !host?.reconnecting ) {
+			if ( error?.code === 'ECONNREFUSED' && !host?.reconnecting ) {
 				return this.disconnect( node );
 			}
 
@@ -88,7 +88,7 @@ export default class HashPool extends EventEmitter {
 				this.emit( 'ready' );
 			} )
 			.catch( ( error: NodeJS.ErrnoException ) => {
-				if ( error.code === 'ECONNREFUSED' ) {
+				if ( error?.code === 'ECONNREFUSED' ) {
 					// This is already handled by the event emitter
 					return;
 				}
