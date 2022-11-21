@@ -6,11 +6,13 @@ export default class Pool extends EventEmitter {
 	opts: any;
 	pool: GenericPool<Memcached>;
 	failures: number;
+	closing: boolean;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();
 
 		this.failures = 0;
+		this.closing = false;
 
 		this.opts = Object.assign( {
 			failures: 5,
@@ -53,12 +55,27 @@ export default class Pool extends EventEmitter {
 	}
 
 	async ready() {
+		if ( this.closing ) {
+			throw new Error( 'Closing' );
+		}
+
+		if ( this.pool.available >= this.pool.min ) {
+			return true;
+		}
+
 		return new Promise( ( resolve, reject ) => {
 			const timeout = setTimeout( () => reject( new Error( 'Timeout' ) ), this.opts.timeout ).unref();
-			this.pool.ready().then( () => {
-				clearTimeout( timeout );
-				resolve( true );
-			} );
+
+			const isReady = () => {
+				if ( this.pool.available >= this.pool.min ) {
+					clearTimeout( timeout );
+					resolve( true );
+				} else {
+					setTimeout( isReady, 100 ).unref();
+				}
+			};
+
+			isReady();
 		} );
 	}
 
@@ -105,6 +122,7 @@ export default class Pool extends EventEmitter {
 	}
 
 	async end() {
+		this.closing = true;
 		await this.pool.drain();
 		await this.pool.clear();
 	}
