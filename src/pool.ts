@@ -36,13 +36,10 @@ export default class Pool extends EventEmitter {
 		this.pool = createPool( {
 			create: async () => {
 				const memcached = new Memcached( port, host, this.opts );
-				memcached.on( 'error', ( error: Error ) => this.emit( 'error', error ) );
-
 				await memcached.ready();
 				return memcached;
 			},
 			destroy: async ( memcached: Memcached ) => {
-				memcached.removeAllListeners();
 				return memcached.end();
 			},
 			validate: async ( memcached: Memcached ) => {

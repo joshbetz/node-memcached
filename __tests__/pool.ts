@@ -23,4 +23,9 @@ describe( 'pool', () => {
 		expect( get ).toBe( 'test' );
 		await pool.end();
 	} );
+
+	it( 'should handle host that does not exist', async () => {
+		const pool = new Pool( 12345, 'invalid-host' );
+		await pool.end();
+	} );
 } );
