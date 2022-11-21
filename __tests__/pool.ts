@@ -28,4 +28,10 @@ describe( 'pool', () => {
 		const pool = new Pool( 12345, 'invalid-host' );
 		await pool.end();
 	} );
+
+	it( 'should return false if no hosts exist', async () => {
+		const pool = new Pool( 12345, 'invalid-host' );
+		expect( pool.get( 'invalid-host' ) ).resolves.toBe( false );
+		await pool.end();
+	} );
 } );
