@@ -28,10 +28,10 @@ export default class Pool extends EventEmitter {
 			socketTimeout: 1000,
 		}, opts );
 
-		opts.testOnBorrow = true;
-		opts.autostart = true;
-		opts.fifo = true;
-		opts.evictionRunIntervalMillis = 0;
+		this.opts.testOnBorrow = true;
+		this.opts.autostart = true;
+		this.opts.fifo = true;
+		this.opts.evictionRunIntervalMillis = 0;
 
 		this.pool = createPool( {
 			create: async () => {
@@ -49,7 +49,7 @@ export default class Pool extends EventEmitter {
 
 				return true;
 			},
-		}, opts );
+		}, this.opts );
 	}
 
 	async ready() {
