@@ -54,7 +54,7 @@ export default class Pool extends EventEmitter {
 
 	async ready() {
 		return new Promise( ( resolve, reject ) => {
-			const timeout = setTimeout( reject, this.opts.timeout ).unref();
+			const timeout = setTimeout( () => reject( new Error( 'Timeout' ) ), this.opts.timeout ).unref();
 			this.pool.ready().then( () => {
 				clearTimeout( timeout );
 				resolve( true );
