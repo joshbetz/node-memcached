@@ -206,7 +206,12 @@ export default class Memcached extends EventEmitter {
 
 	async end(): Promise<void> {
 		return new Promise( resolve => {
-			this.client.once( 'end', resolve );
+			const timeout = setTimeout( this.client.destroy, this.opts.socketTimeout );
+			this.client.once( 'close', () => {
+				clearTimeout( timeout );
+				resolve();
+			} );
+
 			this.client.end();
 		} );
 	}
