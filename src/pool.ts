@@ -59,7 +59,17 @@ export default class Pool extends EventEmitter {
 	}
 
 	async ready() {
-		return this.pool.ready();
+		return new Promise( ( resolve ) => {
+			const isReady = () => {
+				if ( this.pool.available >= this.pool.min ) {
+					resolve( true );
+				} else {
+					setTimeout( isReady, 100 ).unref();
+				}
+			};
+
+			isReady();
+		} );
 	}
 
 	async use( fn: ( client: Memcached ) => Promise<any> ): Promise<any> {
