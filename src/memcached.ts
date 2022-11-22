@@ -23,7 +23,7 @@ export default class Memcached extends EventEmitter {
 		this.client.setTimeout( this.opts.socketTimeout, () => {
 			this.emit( 'error', new Error( 'Socket Timeout' ) );
 			this.client.destroy();
-		} ).unref();
+		} );
 		this.client.once( 'connect', () => this.client.setTimeout( 0 ) );
 		this.client.once( 'ready', () => { this.isReady = true; } );
 
@@ -206,7 +206,7 @@ export default class Memcached extends EventEmitter {
 
 	async end(): Promise<void> {
 		return new Promise( resolve => {
-			const timeout = setTimeout( this.client.destroy, this.opts.socketTimeout );
+			const timeout = setTimeout( () => this.client.destroy(), this.opts.socketTimeout );
 			this.client.once( 'close', () => {
 				clearTimeout( timeout );
 				resolve();

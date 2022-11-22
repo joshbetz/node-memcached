@@ -6,16 +6,15 @@ export default class Pool extends EventEmitter {
 	opts: any;
 	pool: GenericPool<Memcached>;
 	failures: number;
-	closing: boolean;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();
 
 		this.failures = 0;
-		this.closing = false;
 
 		this.opts = Object.assign( {
 			failures: 5,
+			forwardPoolErrors: false,
 
 			// Pool options
 			max: 10,
@@ -38,10 +37,15 @@ export default class Pool extends EventEmitter {
 		this.pool = createPool( {
 			create: async () => {
 				const memcached = new Memcached( port, host, this.opts );
+				if ( this.opts.forwardPoolErrors ) {
+					memcached.on( 'error', ( error: Error ) => this.emit( 'error', error ) );
+				}
+
 				await memcached.ready();
 				return memcached;
 			},
 			destroy: async ( memcached: Memcached ) => {
+				memcached.removeAllListeners();
 				return memcached.end();
 			},
 			validate: async ( memcached: Memcached ) => {
@@ -55,40 +59,16 @@ export default class Pool extends EventEmitter {
 	}
 
 	async ready() {
-		if ( this.closing ) {
-			throw new Error( 'Closing' );
-		}
-
-		if ( this.pool.available >= this.pool.min ) {
-			return true;
-		}
-
-		return new Promise( ( resolve, reject ) => {
-			const timeout = setTimeout( () => reject( new Error( 'Timeout' ) ), this.opts.timeout ).unref();
-
-			const isReady = () => {
-				if ( this.pool.available >= this.pool.min ) {
-					clearTimeout( timeout );
-					resolve( true );
-				} else {
-					setTimeout( isReady, 100 ).unref();
-				}
-			};
-
-			isReady();
-		} );
+		return this.pool.ready();
 	}
 
 	async use( fn: ( client: Memcached ) => Promise<any> ): Promise<any> {
-		let client;
+		let value;
 		try {
-			client = await this.pool.acquire();
+			value = await this.pool.use( fn );
 		} catch ( error ) {
 			return false;
 		}
-
-		const value = await fn( client );
-		await this.pool.release( client );
 
 		return value;
 	}
@@ -122,7 +102,6 @@ export default class Pool extends EventEmitter {
 	}
 
 	async end() {
-		this.closing = true;
 		await this.pool.drain();
 		await this.pool.clear();
 	}

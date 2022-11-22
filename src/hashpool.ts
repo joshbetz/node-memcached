@@ -40,6 +40,8 @@ export default class HashPool extends EventEmitter {
 			socketTimeout: 1000,
 		}, opts );
 
+		this.opts.forwardPoolErrors = true;
+
 		this.retries = 0;
 		this.isReady = false;
 		this.hashring = new HashRing();
@@ -55,20 +57,19 @@ export default class HashPool extends EventEmitter {
 		}
 
 		const [ host, port ] = node.split( ':' );
-		let pool: Pool;
-		try {
-			pool = new Pool( parseInt( port, 10 ), host, this.opts );
-		} catch ( error ) {
-			return;
-		}
-
+		const pool = new Pool( parseInt( port, 10 ), host, this.opts );
 		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
 			const host = this.nodes.get( node );
-			if ( error?.code === 'ECONNREFUSED' && !host?.reconnecting ) {
+			if ( !host || host.reconnecting ) {
+				return;
+			}
+
+			if ( error?.code === 'ECONNREFUSED' ) {
+				// If the connection is closed, remove it and reconnect immediately
 				return this.disconnect( node );
 			}
 
-			if ( host && !host.reconnecting && host.errors++ > this.opts.failures ) {
+			if ( host.errors++ > this.opts.failures ) {
 				return this.disconnect( node );
 			}
 		} );
@@ -87,21 +88,15 @@ export default class HashPool extends EventEmitter {
 				this.isReady = true;
 				this.emit( 'ready' );
 			} )
-			.catch( ( error: NodeJS.ErrnoException ) => {
-				if ( error?.code === 'ECONNREFUSED' ) {
-					// This is already handled by the event emitter
-					return;
-				}
-
-				this.nodes.delete( node );
-				this.reconnect( node );
+			.catch( () => {
+				this.disconnect( node );
 			} );
 	}
 
 	reconnect( node: string ) {
 		setTimeout( () => {
 			this.connect( node );
-		}, this.opts.retry( this.retries++ ) ).unref();
+		}, this.opts.retry( this.retries++ ) );
 	}
 
 	disconnect( node: string, reconnect = true ) {
@@ -133,7 +128,7 @@ export default class HashPool extends EventEmitter {
 		return new Promise<void>( ( resolve, reject ) => {
 			const timeout = setTimeout( () => {
 				reject( new Error( 'No hosts' ) );
-			}, this.opts.socketTimeout ).unref();
+			}, this.opts.timeout ).unref();
 
 			this.once( 'ready', () => {
 				clearTimeout( timeout );
