@@ -117,6 +117,11 @@ export default class Memcached extends EventEmitter {
 			}
 
 			this.client.write( command );
+
+			setTimeout( () => {
+				this.client.removeAllListeners();
+				reject( new Error( 'Command Timeout' ) );
+			}, Math.max( this.opts.socketTimeout, 1000 ) ).unref();
 		} );
 	}
 
