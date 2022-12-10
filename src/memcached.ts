@@ -50,6 +50,7 @@ export default class Memcached extends EventEmitter {
 					buffer.indexOf( 'DELETED\r\n' ),
 					buffer.indexOf( 'OK\r\n' ),
 					buffer.indexOf( 'NOT_FOUND\r\n' ),
+					buffer.indexOf( 'VERSION' ),
 
 					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
 					buffer.indexOf( 'ERROR\r\n' ),
@@ -61,7 +62,7 @@ export default class Memcached extends EventEmitter {
 					// incr / decr returns just a number, i.e. 1\r\n
 					const offset = buffer.indexOf( '\r\n' ) + 2;
 					const line = buffer.substring( 0, offset );
-					if ( !line.match( /^\d+\r\n$/ ) ) {
+					if ( line.indexOf( 'VERSION' ) !== 0 && !line.match( /^\d+\r\n$/ ) ) {
 						// If the message is split, we might not have any tokens in this chunk.
 						return;
 					}
@@ -200,6 +201,11 @@ export default class Memcached extends EventEmitter {
 
 		const end = message.indexOf( '\r\n' );
 		return Number.parseInt( message.substring( 0, end ), 10 );
+	}
+
+	async ping(): Promise<boolean> {
+		const message = await this.command( 'version' );
+		return message.indexOf( 'VERSION' ) === 0;
 	}
 
 	async end(): Promise<void> {

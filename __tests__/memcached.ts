@@ -10,6 +10,16 @@ describe( 'connection', () => {
 
 		await memcached.end();
 	} );
+
+	it( 'should correctly ping the server', async () => {
+		const memcached = new Memcached( 11211, 'localhost' );
+		expect( memcached.isReady ).toBe( false );
+
+		await memcached.ready();
+		expect( await memcached.ping() ).toBe( true );
+
+		await memcached.end();
+	} );
 } );
 
 describe( 'prefix', () => {

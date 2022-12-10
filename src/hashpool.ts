@@ -221,6 +221,15 @@ export default class HashPool extends EventEmitter {
 		return host.decr( key, value );
 	}
 
+	async ping(): Promise<boolean> {
+		const pings = [];
+		for ( const host of this.nodes.values() ) {
+			pings.push( host.pool.ping() );
+		}
+
+		return ( await Promise.all( pings ) ).every( ping => ping === true );
+	}
+
 	async end() {
 		this.isReady = false;
 		for ( const [ node, host ] of this.nodes.entries() ) {

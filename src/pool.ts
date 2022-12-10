@@ -110,6 +110,10 @@ export default class Pool extends EventEmitter {
 		return this.use( ( client: Memcached ) => client.decr( key, value ) );
 	}
 
+	async ping(): Promise<boolean> {
+		return this.use( ( client: Memcached ) => client.ping() );
+	}
+
 	async end() {
 		await this.pool.drain();
 		await this.pool.clear();

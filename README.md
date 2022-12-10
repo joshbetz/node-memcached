@@ -47,6 +47,12 @@ async del( key ): Boolean
 DELETEs a given key.
 
 ```
+async ping(): Boolean
+```
+
+Sends the version command. Returns `true` if the expected response is returned.
+
+```
 async end()
 ```
 
