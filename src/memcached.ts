@@ -85,7 +85,7 @@ export default class Memcached extends EventEmitter {
 				this.errors = 0;
 				this.client.off( 'data', onBufferedMessage );
 				return resolve( buffer );
-			}
+			};
 
 			switch ( cmd ) {
 			case 'get':
