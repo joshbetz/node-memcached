@@ -163,4 +163,14 @@ describe( 'basic commands', () => {
 		const correctedKey = await memcached.get( 'has_whitespace' );
 		expect( correctedKey ).toBe( 'value' );
 	} );
+
+	it( 'should error on keys > 251 characters', async () => {
+		const get = memcached.get( 'a'.repeat( 251 ) );
+		expect( get ).rejects.toThrow( 'Invalid key' );
+	} );
+
+	it( 'should not throw on keys <= 250 characters', async () => {
+		const get = memcached.get( 'a'.repeat( 250 ) );
+		expect( get ).resolves.toBe( false );
+	} );
 } );

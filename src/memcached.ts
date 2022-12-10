@@ -55,6 +55,10 @@ export default class Memcached extends EventEmitter {
 				key = this.opts.prefix + key;
 			}
 
+			if ( key.length > 250 ) {
+				throw new Error( 'Invalid key' );
+			}
+
 			args.unshift( key );
 		}
 
