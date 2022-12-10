@@ -41,7 +41,7 @@ export default class HashPool extends EventEmitter {
 
 			// Connection options
 			timeout: 1000,
-			socketTimeout: 1000,
+			socketTimeout: 100,
 		}, opts );
 
 		this.opts.forwardPoolErrors = true;

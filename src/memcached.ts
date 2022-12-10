@@ -15,7 +15,7 @@ export default class Memcached extends EventEmitter {
 		this.opts = Object.assign( {
 			prefix: '',
 			timeout: 1000,
-			socketTimeout: 1000,
+			socketTimeout: 100,
 		}, opts );
 
 		// setup client

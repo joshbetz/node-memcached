@@ -26,7 +26,7 @@ export default class Pool extends EventEmitter {
 
 			// Connection options
 			timeout: 1000,
-			socketTimeout: 1000,
+			socketTimeout: 100,
 		}, opts );
 
 		this.opts.testOnBorrow = true;
