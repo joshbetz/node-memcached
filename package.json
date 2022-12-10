@@ -1,7 +1,7 @@
 {
   "name": "@joshbetz/memcached",
   "version": "1.2.0",
-  "description": "",
+  "description": "Memcached client for modern Node JS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -11,8 +11,16 @@
     "jest": "jest",
     "prepare": "npm run build"
   },
-  "author": "",
+  "author": "Josh Betz",
   "license": "MIT",
+  "keywords": [
+    "cache",
+    "cluster",
+    "failover",
+    "hashring",
+    "memcache",
+    "memcached"
+  ],
   "dependencies": {
     "generic-pool": "^3.9.0",
     "hashring": "^3.2.0"
