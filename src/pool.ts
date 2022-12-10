@@ -1,10 +1,25 @@
 import { createPool, type Pool as GenericPool } from 'generic-pool';
 import { EventEmitter } from 'events';
-import Memcached from './memcached';
+import Memcached, { type MemcachedOptions } from './memcached';
+
+export type PoolOptions = {
+	max: number;
+	min: number;
+	acquireTimeoutMillis: number;
+	destroyTimeoutMillis: number;
+	maxWaitingClients: number;
+	idleTimeoutMillis: number;
+
+	// internal
+	forwardPoolErrors: boolean;
+	autostart: boolean;
+	fifo: boolean;
+	evictionRunIntervalMillis: number;
+} & MemcachedOptions;
 
 export default class Pool extends EventEmitter {
-	opts: any;
 	pool: GenericPool<Memcached>;
+	opts: PoolOptions;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();

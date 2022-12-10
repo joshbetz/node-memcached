@@ -1,6 +1,10 @@
 import { EventEmitter } from 'events';
-import Pool from './pool';
+import Pool, { type PoolOptions } from './pool';
 const HashRing = require( 'hashring' );
+
+export type HashPoolOptions = {
+	retry: ( retries: number ) => number;
+} & PoolOptions;
 
 type PoolNode = {
 	pool: Pool;
@@ -8,11 +12,11 @@ type PoolNode = {
 };
 
 export default class HashPool extends EventEmitter {
-	opts: any;
 	hashring: typeof HashRing;
 	nodes: Map<string, PoolNode>;
 	isReady: boolean;
 	retries: number;
+	opts: HashPoolOptions;
 
 	constructor( nodes: Array<string>, opts?: any ) {
 		super();

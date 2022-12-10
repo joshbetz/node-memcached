@@ -1,10 +1,15 @@
 import { createConnection, type Socket } from 'net';
 import { EventEmitter } from 'events';
 
+export type MemcachedOptions = {
+	prefix: string;
+	socketTimeout: number;
+};
+
 export default class Memcached extends EventEmitter {
 	client: Socket;
 	isReady: boolean;
-	opts: any;
+	opts: MemcachedOptions;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();
