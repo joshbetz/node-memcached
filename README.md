@@ -61,7 +61,6 @@ This is a simple Memcached library that connects to a Memcached server and execu
 ```
 const opts = {
     prefix: '',
-    timeout: 1000,
     socketTimeout: 100,
 };
 const memcached = new Memcached( 11211, 'localhost', opts );
@@ -74,7 +73,6 @@ await memcached.end();
 ### Options
 
 * `prefix` A prefix to apply to all keys. Default: ''
-* `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 100.
 
 ## Pool Library
@@ -97,7 +95,6 @@ const opts = {
 
     // Connection options
     prefix: '',
-    timeout: 1000,
     socketTimeout: 100,
 };
 const memcached = new Pool( 11211, 'localhost', opts );
@@ -116,7 +113,6 @@ await memcached.end();
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
 * `prefix` A prefix to apply to all keys. Default: ''
-* `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 100.
 
 ## HashPool Library
@@ -145,7 +141,6 @@ const opts = {
 
     // Connection options
     prefix: '',
-    timeout: 1000,
     socketTimeout: 100,
 };
 const memcached = new HashPool( [ 'localhost:11211', 'localhost:11311' ], opts );
@@ -165,5 +160,4 @@ await memcached.end();
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
 * `prefix` A prefix to apply to all keys. Default: ''
-* `timeout` The command timeout in milliseconds. Default: 1000.
 * `socketTimeout` The timeout to establish a connection. Default: 100.

@@ -25,7 +25,6 @@ export default class Pool extends EventEmitter {
 			idleTimeoutMillis: 30000,
 
 			// Connection options
-			timeout: 1000,
 			socketTimeout: 100,
 		}, opts );
 

@@ -40,7 +40,6 @@ export default class HashPool extends EventEmitter {
 			idleTimeoutMillis: 30000,
 
 			// Connection options
-			timeout: 1000,
 			socketTimeout: 100,
 		}, opts );
 
@@ -129,7 +128,7 @@ export default class HashPool extends EventEmitter {
 		return new Promise<void>( ( resolve, reject ) => {
 			const timeout = setTimeout( () => {
 				reject( new Error( 'No hosts' ) );
-			}, this.opts.timeout ).unref();
+			}, this.opts.socketTimeout ).unref();
 
 			this.once( 'ready', () => {
 				clearTimeout( timeout );

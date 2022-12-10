@@ -14,7 +14,6 @@ export default class Memcached extends EventEmitter {
 		this.isReady = false;
 		this.opts = Object.assign( {
 			prefix: '',
-			timeout: 1000,
 			socketTimeout: 100,
 		}, opts );
 
@@ -127,11 +126,6 @@ export default class Memcached extends EventEmitter {
 
 			this.client.write( command );
 			this.once( 'message', onMessage );
-
-			setTimeout( () => {
-				this.off( 'message', onMessage );
-				reject( new Error( 'Timeout' ) );
-			}, this.opts.timeout ).unref();
 		} );
 	}
 
