@@ -10,22 +10,22 @@ export default class Memcached extends EventEmitter {
 	constructor( port: number, host: string, opts?: any ) {
 		super();
 
+		this.errors = 0;
+		this.isReady = false;
 		this.opts = Object.assign( {
 			prefix: '',
 			timeout: 1000,
 			socketTimeout: 1000,
 		}, opts );
 
-		this.errors = 0;
-		this.isReady = false;
-
+		// setup client
 		this.client = createConnection( { port, host } );
+		this.client.once( 'connect', () => this.client.setTimeout( 0 ) );
+		this.client.once( 'ready', () => { this.isReady = true; } );
 		this.client.setTimeout( this.opts.socketTimeout, () => {
 			this.emit( 'error', new Error( 'Socket Timeout' ) );
 			this.client.destroy();
 		} );
-		this.client.once( 'connect', () => this.client.setTimeout( 0 ) );
-		this.client.once( 'ready', () => { this.isReady = true; } );
 
 		// forward errors
 		this.client.on( 'error', ( error: Error ) => {
@@ -35,6 +35,10 @@ export default class Memcached extends EventEmitter {
 			this.emit( 'message', error );
 		} );
 
+		this.handleSocketResponse();
+	}
+
+	handleSocketResponse() {
 		let buffer = '';
 		this.client.on( 'data', ( data: Buffer ) => {
 			this.errors = 0;

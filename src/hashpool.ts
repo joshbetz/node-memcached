@@ -18,6 +18,10 @@ export default class HashPool extends EventEmitter {
 	constructor( nodes: Array<string>, opts?: any ) {
 		super();
 
+		this.retries = 0;
+		this.isReady = false;
+		this.hashring = new HashRing();
+		this.nodes = new Map();
 		this.opts = Object.assign( {
 			failures: 5,
 			retry: ( retries: number ): number => {
@@ -42,10 +46,7 @@ export default class HashPool extends EventEmitter {
 
 		this.opts.forwardPoolErrors = true;
 
-		this.retries = 0;
-		this.isReady = false;
-		this.hashring = new HashRing();
-		this.nodes = new Map();
+		// initialize hash pool
 		for ( const node of nodes ) {
 			this.connect( node );
 		}
