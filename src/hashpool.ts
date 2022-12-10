@@ -4,7 +4,6 @@ const HashRing = require( 'hashring' );
 
 type PoolNode = {
 	pool: Pool;
-	errors: number;
 	reconnecting: boolean;
 };
 
@@ -23,7 +22,6 @@ export default class HashPool extends EventEmitter {
 		this.hashring = new HashRing();
 		this.nodes = new Map();
 		this.opts = Object.assign( {
-			failures: 5,
 			retry: ( retries: number ): number => {
 				const exp = Math.pow( 2, retries ) * 250;
 
@@ -58,25 +56,17 @@ export default class HashPool extends EventEmitter {
 
 		const [ host, port ] = node.split( ':' );
 		const pool = new Pool( parseInt( port, 10 ), host, this.opts );
-		pool.on( 'error', ( error: NodeJS.ErrnoException ) => {
+		pool.on( 'error', () => {
 			const host = this.nodes.get( node );
 			if ( !host || host.reconnecting ) {
 				return;
 			}
 
-			if ( error?.code === 'ECONNREFUSED' ) {
-				// If the connection is closed, remove it and reconnect immediately
-				return this.disconnect( node );
-			}
-
-			if ( host.errors++ > this.opts.failures ) {
-				return this.disconnect( node );
-			}
+			this.disconnect( node );
 		} );
 
 		this.nodes.set( node, {
 			pool,
-			errors: 0,
 			reconnecting: false,
 		} );
 
@@ -145,7 +135,6 @@ export default class HashPool extends EventEmitter {
 			throw new Error( 'Could not find node' );
 		}
 
-		node.errors = 0;
 		return node.pool;
 	}
 

@@ -5,15 +5,11 @@ import Memcached from './memcached';
 export default class Pool extends EventEmitter {
 	opts: any;
 	pool: GenericPool<Memcached>;
-	failures: number;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();
 
-		this.failures = 0;
-
 		this.opts = Object.assign( {
-			failures: 5,
 			forwardPoolErrors: false,
 
 			// Pool options
@@ -28,7 +24,6 @@ export default class Pool extends EventEmitter {
 			socketTimeout: 100,
 		}, opts );
 
-		this.opts.testOnBorrow = true;
 		this.opts.autostart = true;
 		this.opts.fifo = true;
 		this.opts.evictionRunIntervalMillis = 0;
@@ -46,13 +41,6 @@ export default class Pool extends EventEmitter {
 			destroy: async ( memcached: Memcached ) => {
 				memcached.removeAllListeners();
 				return memcached.end();
-			},
-			validate: async ( memcached: Memcached ) => {
-				if ( memcached.errors > this.failures ) {
-					return false;
-				}
-
-				return true;
 			},
 		}, this.opts );
 	}

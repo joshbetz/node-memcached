@@ -3,14 +3,12 @@ import { EventEmitter } from 'events';
 
 export default class Memcached extends EventEmitter {
 	client: Socket;
-	errors: number;
 	isReady: boolean;
 	opts: any;
 
 	constructor( port: number, host: string, opts?: any ) {
 		super();
 
-		this.errors = 0;
 		this.isReady = false;
 		this.opts = Object.assign( {
 			prefix: '',
@@ -28,7 +26,6 @@ export default class Memcached extends EventEmitter {
 
 		// forward errors
 		this.client.on( 'error', ( error: Error ) => {
-			this.errors++;
 			this.emit( 'error', error );
 		} );
 	}
@@ -64,29 +61,38 @@ export default class Memcached extends EventEmitter {
 
 		const command = `${cmd} ${args.join( ' ' )}\r\n`;
 		return new Promise( ( resolve, reject ) => {
-			const onSimpleMessage = ( message: Buffer ) => {
-				this.errors = 0;
-				return resolve( message.toString() );
-			};
-
-			let buffer = '';
-			const onBufferedMessage = ( data: Buffer ) => {
-				const tokens = [
-					data.indexOf( 'END\r\n' ),
-
+			const isError = ( data: Buffer ) => {
+				const errors = [
 					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
 					data.indexOf( 'ERROR\r\n' ),
 					data.indexOf( 'CLIENT_ERROR' ),
 					data.indexOf( 'SERVER_ERROR' ),
 				];
 
+				return errors.some( token => token >= 0 );
+			};
+
+			const onSimpleMessage = ( data: Buffer ) => {
+				if ( isError( data ) ) {
+					return reject( data );
+				}
+
+				return resolve( data.toString() );
+			};
+
+			let buffer = '';
+			const onBufferedMessage = ( data: Buffer ) => {
+				if ( isError( data ) ) {
+					this.client.off( 'data', onBufferedMessage );
+					return reject( buffer );
+				}
+
 				buffer += data;
-				if ( !tokens.some( token => token >= 0 ) ) {
+				if ( data.indexOf( 'END\r\n' ) < 0 ) {
 					// Keep looking for terminating tokens
 					return;
 				}
 
-				this.errors = 0;
 				this.client.off( 'data', onBufferedMessage );
 				return resolve( buffer );
 			};
