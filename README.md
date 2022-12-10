@@ -88,9 +88,9 @@ const opts = {
     // Pool options
     max: 10,
     min: 2,
-    acquireTimeoutMillis: 2000,
-    destroyTimeoutMillis: 2000,
-    maxWaitingClients: 10,
+    acquireTimeoutMillis: 200,
+    destroyTimeoutMillis: 200,
+    maxWaitingClients: 2,
     idleTimeoutMillis: 30000,
 
     // Connection options
@@ -108,9 +108,9 @@ await memcached.end();
 * `failures` The number of consecutive errors on a given connection before it is recycled. Default: 5.
 * `max` The maximum number of connections in the pool. Default: 10.
 * `min` The minimum number of connections in the pool. Default: 2.
-* `acquireTimeoutMillis` The maximum amount of time to wait to create a connection. Default: 2000.
-* `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 2000.
-* `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
+* `acquireTimeoutMillis` The maximum amount of time to wait to create a connection. Default: 200.
+* `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 200.
+* `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 2.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
 * `prefix` A prefix to apply to all keys. Default: ''
 * `socketTimeout` The timeout to establish a connection. Default: 100.
@@ -134,9 +134,9 @@ const opts = {
     // Pool options
     max: 10,
     min: 2,
-    acquireTimeoutMillis: 2000,
-    destroyTimeoutMillis: 2000,
-    maxWaitingClients: 10,
+    acquireTimeoutMillis: 200,
+    destroyTimeoutMillis: 200,
+    maxWaitingClients: 2,
     idleTimeoutMillis: 30000,
 
     // Connection options
@@ -155,9 +155,9 @@ await memcached.end();
 * `retry` A function that takes the number of retries as a parameter and returns the time before the next retry in milliseconds.
 * `max` The maximum number of connections in the pool. Default: 10.
 * `min` The minimum number of connections in the pool. Default: 2.
-* `acquireTimeoutMillis` The maximum amount of time to wait to create a connection. Default: 2000.
-* `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 2000.
-* `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 10.
+* `acquireTimeoutMillis` The maximum amount of time to wait to create a connection. Default: 200.
+* `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 200.
+* `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 2.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
 * `prefix` A prefix to apply to all keys. Default: ''
 * `socketTimeout` The timeout to establish a connection. Default: 100.

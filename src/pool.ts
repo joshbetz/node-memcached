@@ -19,9 +19,9 @@ export default class Pool extends EventEmitter {
 			// Pool options
 			max: 10,
 			min: 2,
-			acquireTimeoutMillis: 2000,
-			destroyTimeoutMillis: 2000,
-			maxWaitingClients: 10,
+			acquireTimeoutMillis: 200,
+			destroyTimeoutMillis: 200,
+			maxWaitingClients: 2,
 			idleTimeoutMillis: 30000,
 
 			// Connection options
