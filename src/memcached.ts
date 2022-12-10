@@ -29,62 +29,7 @@ export default class Memcached extends EventEmitter {
 		// forward errors
 		this.client.on( 'error', ( error: Error ) => {
 			this.errors++;
-
 			this.emit( 'error', error );
-			this.emit( 'message', error );
-		} );
-
-		this.handleSocketResponse();
-	}
-
-	handleSocketResponse() {
-		let buffer = '';
-		this.client.on( 'data', ( data: Buffer ) => {
-			this.errors = 0;
-
-			buffer += data;
-			while ( buffer.length > 0 ) {
-				const tokens = [
-					buffer.indexOf( 'END\r\n' ),
-					buffer.indexOf( 'STORED\r\n' ),
-					buffer.indexOf( 'DELETED\r\n' ),
-					buffer.indexOf( 'OK\r\n' ),
-					buffer.indexOf( 'NOT_FOUND\r\n' ),
-					buffer.indexOf( 'VERSION' ),
-
-					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
-					buffer.indexOf( 'ERROR\r\n' ),
-					buffer.indexOf( 'CLIENT_ERROR' ),
-					buffer.indexOf( 'SERVER_ERROR' ),
-				].filter( i => i >= 0 );
-
-				if ( !tokens.length ) {
-					// incr / decr returns just a number, i.e. 1\r\n
-					const offset = buffer.indexOf( '\r\n' ) + 2;
-					const line = buffer.substring( 0, offset );
-					if ( line.indexOf( 'VERSION' ) !== 0 && !line.match( /^\d+\r\n$/ ) ) {
-						// If the message is split, we might not have any tokens in this chunk.
-						return;
-					}
-
-					tokens.push( 0 );
-				}
-
-				// Get the end of the next message
-				const token = Math.min( ...tokens );
-				const end = buffer.indexOf( '\r\n', token ) + 2;
-
-				if ( end > buffer.length ) {
-					// For safety. This shouldn't be possible.
-					return;
-				}
-
-				// emit response
-				this.emit( 'message', null, buffer.substring( 0, end ) );
-
-				// remove response from the buffer
-				buffer = buffer.substring( end );
-			}
 		} );
 	}
 
@@ -113,20 +58,48 @@ export default class Memcached extends EventEmitter {
 
 		const command = `${cmd} ${args.join( ' ' )}\r\n`;
 		return new Promise( ( resolve, reject ) => {
-			const onMessage = ( error: Error, message: string ) => {
-				if ( error ) {
-					return reject( error );
-				}
-
-				if ( message.indexOf( 'ERROR' ) === 0 || message.indexOf( 'CLIENT_ERROR' ) === 0 || message.indexOf( 'SERVER_ERROR' ) === 0 ) {
-					return reject( message );
-				}
-
-				return resolve( message );
+			const onSimpleMessage = ( message: Buffer ) => {
+				this.errors = 0;
+				return resolve( message.toString() );
 			};
 
+			let buffer = '';
+			const onBufferedMessage = ( data: Buffer ) => {
+				const tokens = [
+					data.indexOf( 'END\r\n' ),
+
+					// error strings https://github.com/memcached/memcached/blob/master/doc/protocol.txt#L156
+					data.indexOf( 'ERROR\r\n' ),
+					data.indexOf( 'CLIENT_ERROR' ),
+					data.indexOf( 'SERVER_ERROR' ),
+				];
+
+				buffer += data;
+				if ( !tokens.some( token => token >= 0 ) ) {
+					// Keep looking for terminating tokens
+					return;
+				}
+
+				this.errors = 0;
+				this.client.off( 'data', onBufferedMessage );
+				return resolve( buffer );
+			}
+
+			switch ( cmd ) {
+			case 'get':
+			case 'gets':
+			case 'gat':
+			case 'gats':
+			case 'mg':
+			case 'stat':
+				this.client.on( 'data', onBufferedMessage );
+				break;
+			default:
+				this.client.once( 'data', onSimpleMessage );
+				break;
+			}
+
 			this.client.write( command );
-			this.once( 'message', onMessage );
 		} );
 	}
 
