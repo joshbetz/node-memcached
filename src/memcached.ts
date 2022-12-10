@@ -45,6 +45,8 @@ export default class Memcached extends EventEmitter {
 	}
 
 	async command( cmd: string, key?: string, args: Array<string> = [] ): Promise<string> {
+		cmd = cmd.toLowerCase();
+
 		if ( key ) {
 			// keys cannot contain whitespace
 			key = key.replace( /\s+/, '_' );
