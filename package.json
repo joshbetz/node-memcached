@@ -1,6 +1,6 @@
 {
   "name": "@joshbetz/memcached",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Memcached client for modern Node JS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
