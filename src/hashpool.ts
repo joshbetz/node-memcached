@@ -4,6 +4,7 @@ const HashRing = require( 'hashring' );
 
 export type HashPoolOptions = {
 	retry: ( retries: number ) => number;
+	pingInterval: number;
 } & PoolOptions;
 
 type PoolNode = {
@@ -32,6 +33,7 @@ export default class HashPool extends EventEmitter {
 				// exponential backoff up to 30 seconds
 				return Math.min( exp, 30000 );
 			},
+			pingInterval: 60_000,
 
 			// Pool options
 			max: 10,
@@ -50,6 +52,12 @@ export default class HashPool extends EventEmitter {
 		// initialize hash pool
 		for ( const node of nodes ) {
 			this.connect( node );
+		}
+
+		if ( this.opts.pingInterval > 0 ) {
+			setInterval( () => {
+				this.ping();
+			}, this.opts.pingInterval ).unref();
 		}
 	}
 

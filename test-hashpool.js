@@ -5,7 +5,7 @@ async function sleep( ms ) {
 }
 
 async function main() {
-	const memcached = new HashPool( [ 'localhost:11211', 'localhost:11311' ] );
+	const memcached = new HashPool( [ 'localhost:11211', 'localhost:11311' ], { pingInterval: 1000 } );
 	while ( true ) {
 		try {
 			const key = 'test';
