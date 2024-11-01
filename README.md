@@ -2,7 +2,7 @@
 
 There are three libraries exported from this package.
 
-```
+```javascript
 const { Memcached, Pool, HashPool } = require( '@joshbetz/memcached' );
 ```
 
@@ -10,49 +10,49 @@ const { Memcached, Pool, HashPool } = require( '@joshbetz/memcached' );
 
 The API for all three libraries is the same. It just depends what kind of connection and failover logic you need.
 
-```
+```javascript
 async ready()
 ```
 
 Wait for the connection to be ready.
 
-```
+```javascript
 async flush()
 ```
 
 Flush the Memcached data.
 
-```
+```javascript
 async set( key, value, ttl ): Boolean
 ```
 
 SETs a given key and value for the specified TTL (or no TTL). Returns a Boolean to indicate whether the operation was successful.
 
-```
+```javascript
 async add( key, value, ttl ): Boolean
 ```
 
 ADDs a given key and value for the specified TTL (or no TTL) if it doesn't already exist. Returns a Boolean to indicate whether the operation was successful.
 
-```
+```javascript
 async get( key ): string|Boolean
 ```
 
 GETs a given key. Returns `false` if it does not exist.
 
-```
+```javascript
 async del( key ): Boolean
 ```
 
 DELETEs a given key.
 
-```
+```javascript
 async ping(): Boolean
 ```
 
 Sends the version command. Returns `true` if the expected response is returned.
 
-```
+```javascript
 async end()
 ```
 
@@ -64,7 +64,7 @@ This is a simple Memcached library that connects to a Memcached server and execu
 
 ### Example
 
-```
+```javascript
 const opts = {
     prefix: '',
     socketTimeout: 100,
@@ -87,7 +87,7 @@ This is a wrapper around our Memcached library that establishes a connection poo
 
 ### Example
 
-```
+```javascript
 const opts = {
     // Pool options
     max: 10,
@@ -124,7 +124,7 @@ This is a wrapper around our Pool library that establishes connection pools to e
 
 ### Example
 
-```
+```javascript
 const opts = {
     retry: ( retries: number ): number => {
         const exp = Math.pow( 2, retries ) * 250;
