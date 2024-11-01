@@ -78,7 +78,7 @@ await memcached.end();
 
 ### Options
 
-* `prefix` A prefix to apply to all keys. Default: ''
+* `prefix` A prefix to apply to all keys. Default: (empty string)
 * `socketTimeout` The timeout to establish a connection. Default: 100.
 
 ## Pool Library
@@ -115,7 +115,7 @@ await memcached.end();
 * `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 200.
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 2.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
-* `prefix` A prefix to apply to all keys. Default: ''
+* `prefix` A prefix to apply to all keys. Default: (empty string)
 * `socketTimeout` The timeout to establish a connection. Default: 100.
 
 ## HashPool Library
@@ -160,5 +160,5 @@ await memcached.end();
 * `destroyTimeoutMillis` The maximum amount of time to wait to destroy a connection. Default: 200.
 * `maxWaitingClients` The maximum number of queued requests allowed, additional acquire calls will be callback with an err in a future cycle of the event loop. Default: 2.
 * `idleTimeoutMillis` The minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Default: 30000.
-* `prefix` A prefix to apply to all keys. Default: ''
+* `prefix` A prefix to apply to all keys. Default: (empty string)
 * `socketTimeout` The timeout to establish a connection. Default: 100.
