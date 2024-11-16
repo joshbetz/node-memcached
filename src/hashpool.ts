@@ -47,8 +47,6 @@ export default class HashPool extends EventEmitter {
 			socketTimeout: 100,
 		}, opts );
 
-		this.opts.forwardPoolErrors = true;
-
 		// initialize hash pool
 		for ( const node of nodes ) {
 			this.connect( node );
