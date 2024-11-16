@@ -11,7 +11,7 @@ export default class Memcached extends EventEmitter {
 	isReady: boolean;
 	opts: MemcachedOptions;
 
-	constructor( port: number, host: string, opts?: any ) {
+	constructor( port: number, host: string, opts?: MemcachedOptions ) {
 		super();
 
 		this.isReady = false;

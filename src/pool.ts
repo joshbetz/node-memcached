@@ -21,7 +21,7 @@ export default class Pool extends EventEmitter {
 	pool: GenericPool<Memcached>;
 	opts: PoolOptions;
 
-	constructor( port: number, host: string, opts?: any ) {
+	constructor( port: number, host: string, opts?: PoolOptions ) {
 		super();
 
 		this.opts = Object.assign( {

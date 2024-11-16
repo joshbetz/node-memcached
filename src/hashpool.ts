@@ -19,7 +19,7 @@ export default class HashPool extends EventEmitter {
 	retries: number;
 	opts: HashPoolOptions;
 
-	constructor( nodes: Array<string>, opts?: any ) {
+	constructor( nodes: Array<string>, opts?: HashPoolOptions ) {
 		super();
 
 		this.retries = 0;
