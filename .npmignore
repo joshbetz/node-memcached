@@ -1,2 +1,7 @@
 __tests__
 src
+
+dependabot.yml
+docker-compose.yml
+jest.config.js
+test-hashpool.js
