@@ -11,7 +11,6 @@ export type PoolOptions = {
 	idleTimeoutMillis: number;
 
 	// internal
-	forwardPoolErrors: boolean;
 	autostart: boolean;
 	fifo: boolean;
 	evictionRunIntervalMillis: number;
@@ -25,8 +24,6 @@ export default class Pool extends EventEmitter {
 		super();
 
 		this.opts = Object.assign( {
-			forwardPoolErrors: false,
-
 			// Pool options
 			max: 10,
 			min: 2,
@@ -46,9 +43,11 @@ export default class Pool extends EventEmitter {
 		this.pool = createPool( {
 			create: async () => {
 				const memcached = new Memcached( port, host, this.opts );
-				if ( this.opts.forwardPoolErrors ) {
-					memcached.on( 'error', ( error: Error ) => this.emit( 'error', error ) );
-				}
+				memcached.on( 'error', ( error: Error ) => {
+					if ( this.listeners( 'error' ).length ) {
+						this.emit( 'error', error );
+					}
+				} );
 
 				await memcached.ready();
 				return memcached;
