@@ -1,6 +1,10 @@
 {
   "name": "@joshbetz/memcached",
   "version": "1.4.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshbetz/node-memcached.git"
+  },
   "description": "Memcached client for modern Node JS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
